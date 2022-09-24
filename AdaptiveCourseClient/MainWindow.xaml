@@ -7,6 +7,23 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
 
+        <Border BorderBrush="Black" BorderThickness="3" Grid.Column="1">
+            <Canvas 
+                x:Name="bodyCanvas"
+                Background="LightGray">
+            </Canvas>
+        </Border>
+
+        <Border BorderBrush="Black" BorderThickness="3" Grid.Column="0">
+            <Canvas 
+                x:Name="sideBar"
+                Background="LightCyan">
+            </Canvas>
+        </Border>
     </Grid>
 </Window>
