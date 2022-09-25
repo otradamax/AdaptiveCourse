@@ -12,18 +12,10 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
 
-        <Border BorderBrush="Black" BorderThickness="3" Grid.Column="1">
-            <Canvas 
-                x:Name="bodyCanvas"
-                Background="LightGray">
-            </Canvas>
-        </Border>
+        <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.ColumnSpan="2" />
 
-        <Border BorderBrush="Black" BorderThickness="3" Grid.Column="0">
-            <Canvas 
-                x:Name="sideBar"
-                Background="LightCyan">
-            </Canvas>
-        </Border>
+        <Rectangle x:Name="Toolbox" Grid.Column="0" Fill="Wheat" Panel.ZIndex="-1"/>
+        <Rectangle x:Name="Main" Grid.Column="1" Fill="Plum" Margin="40 30 40 30" 
+                   RadiusX="20" RadiusY="20" Panel.ZIndex="-1"/>
     </Grid>
 </Window>

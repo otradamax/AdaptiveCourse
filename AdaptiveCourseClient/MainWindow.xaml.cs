@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Shapes;
 using AdaptiveCourseClient.RenderObjects;
 
@@ -30,15 +31,17 @@ namespace AdaptiveCourseClient
             logicElement.PreviewMouseLeftButtonDown += LogicElement_PreviewMouseLeftButtonDown;
             logicElement.PreviewMouseMove += LogicElement_PreviewMouseMove;
             logicElement.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
-            sideBar.Children.Add(logicElement);
+            bodyCanvas.Children.Add(logicElement);
         }
 
         private void LogicElement_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             logicElement = (UIElement)sender;
-            logicElementOffset = e.GetPosition(sideBar);
+            logicElementOffset = e.GetPosition(bodyCanvas);
             logicElementOffset.Y -= Canvas.GetTop(logicElement);
             logicElementOffset.X -= Canvas.GetLeft(logicElement);
+            Panel.SetZIndex(logicElement, 1);
+            logicElement.CaptureMouse();
         }
 
         private void LogicElement_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -48,14 +51,24 @@ namespace AdaptiveCourseClient
 
             // Logic element movement
             Point cursorPosition = e.GetPosition(sender as Canvas);
-            Canvas.SetTop(sender as UIElement, cursorPosition.Y - logicElementOffset.Y);
-            Canvas.SetLeft(sender as UIElement, cursorPosition.X - logicElementOffset.X);
+            Canvas.SetTop(logicElement, cursorPosition.Y - logicElementOffset.Y);
+            Canvas.SetLeft(logicElement, cursorPosition.X - logicElementOffset.X);
         }
 
         private void LogicElement_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (logicElement == null)
+                return;
+
+            Point position = e.GetPosition(sender as Canvas);
+            if (position.X < Toolbox.ActualWidth)
+            {
+                Canvas.SetTop(logicElement, 50);
+                Canvas.SetLeft(logicElement, 50);
+            }
+            Panel.SetZIndex(logicElement, 0);
+            logicElement?.ReleaseMouseCapture();
             logicElement = null;
         }
-
     }
 }
