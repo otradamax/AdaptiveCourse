@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -14,14 +15,16 @@ namespace AdaptiveCourseClient
     {
         private UIElement? logicElement;
         private Point logicElementOffset;
+        private List<UIElement> list = new List<UIElement>();
+
 
         public MainWindow()
         {
             InitializeComponent();
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 2; i++)
             {
-                AddLogicElement();
+                list = ElementAND.AddAND(LogicElementAND_PreviewMouseLeftButtonDown, bodyCanvas);
             }
         }
 
@@ -32,6 +35,20 @@ namespace AdaptiveCourseClient
             logicElement.PreviewMouseMove += LogicElement_PreviewMouseMove;
             logicElement.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
             bodyCanvas.Children.Add(logicElement);
+        }
+
+        private void LogicElementAND_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            logicElement = (UIElement)sender;
+            if (list.Contains(logicElement))
+            {
+                List<UIElement> listFinal = list.FindAll(t => t== logicElement);
+            }
+            logicElementOffset = e.GetPosition(bodyCanvas);
+            logicElementOffset.Y -= Canvas.GetTop(logicElement);
+            logicElementOffset.X -= Canvas.GetLeft(logicElement);
+            Panel.SetZIndex(logicElement, 1);
+            logicElement.CaptureMouse();
         }
 
         private void LogicElement_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
