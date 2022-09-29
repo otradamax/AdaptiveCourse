@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Shapes;
-using System.Xml.Linq;
 using AdaptiveCourseClient.RenderObjects;
 
 namespace AdaptiveCourseClient
@@ -15,77 +12,104 @@ namespace AdaptiveCourseClient
     /// </summary>
     public partial class MainWindow : Window
     {
-        private UIElement? logicElement;
-        private List<UIElement> logicElements = new List<UIElement>();
+        private UIElement? currentUIElement;
+        private UIElementGroup? logicElement;
         private Point logicElementOffset;
-        private List<List<UIElement>> list = new List<List<UIElement>>();
-
+        private List<UIElementGroup> logicElements;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            logicElements = new List<UIElementGroup>();
             for (int i = 0; i < 3; i++)
             {
-                list.Add(ElementAND.AddAND(LogicElementAND_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
-                    LogicElement_PreviewMouseLeftButtonUp, bodyCanvas));
+                ElementAND elementAND = new ElementAND();
+                logicElements.Add(elementAND.AddAND(bodyCanvas));
+                elementAND.MoveLogicBlock(LogicElementAND_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
+                    LogicElement_PreviewMouseLeftButtonUp);
+                elementAND.ChangeInputsOutputs();
             }
         }
 
         private void LogicElementAND_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            logicElement = (UIElement)sender;
-            foreach(List<UIElement> logicBlock in list)
+            currentUIElement = (UIElement)sender;
+            foreach(UIElementGroup logicBlock in logicElements)
             {
-                if (logicBlock.Contains(logicElement))
+                if (logicBlock.Contains(currentUIElement))
                 {
-                    logicElements = logicBlock;
+                    logicElement = logicBlock;
                 }
             }
             logicElementOffset = e.GetPosition(bodyCanvas);
-            logicElementOffset.Y -= Canvas.GetTop(logicElement);
-            logicElementOffset.X -= Canvas.GetLeft(logicElement);
-            //Panel.SetZIndex(logicElement, 1);
-            logicElement.CaptureMouse();
+            logicElementOffset.Y -= Canvas.GetTop(currentUIElement);
+            logicElementOffset.X -= Canvas.GetLeft(currentUIElement);
+            if (logicElement != null)
+            {
+                foreach (UIElement uIElement in logicElement)
+                {
+                    Panel.SetZIndex(uIElement, 1);
+                }
+            }
+            currentUIElement.CaptureMouse();
         }
 
         private void LogicElement_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (logicElements == null || logicElement == null)
+            if (logicElement == null)
                 return;
 
             // Logic element movement
             Point cursorPosition = e.GetPosition(sender as Canvas);
 
-            double positionXMain = Canvas.GetLeft(logicElements[0]);
-            double positionYMain = Canvas.GetTop(logicElements[0]);
+            double positionXMain = Canvas.GetLeft(logicElement[0]);
+            double positionYMain = Canvas.GetTop(logicElement[0]);
 
-            foreach (UIElement uIElement in logicElements)
+            foreach (UIElement uIElement in logicElement)
             {
-                double positionX = Canvas.GetLeft(uIElement);
-                double positionY = Canvas.GetTop(uIElement);
-                double Y = cursorPosition.Y - logicElementOffset.Y - (positionYMain - positionY);
-                double X = cursorPosition.X - logicElementOffset.X - (positionXMain - positionX);
-                Canvas.SetTop(uIElement, Y);
-                Canvas.SetLeft(uIElement, X);
+                if (uIElement is Line)
+                {
+                    Line line = (Line)uIElement;
+                    double positionX = line.X1;
+                    double positionY = line.Y1;
+                    double Y = cursorPosition.Y - logicElementOffset.Y - (positionYMain - positionY);
+                    double X = cursorPosition.X - logicElementOffset.X - (positionXMain - positionX);
+                    line.X1 = X;
+                    line.Y1 = Y;
+                    line.X2 = X + 9;
+                    line.Y2 = Y;
+                }
+                else
+                {
+                    double positionX = Canvas.GetLeft(uIElement);
+                    double positionY = Canvas.GetTop(uIElement);
+                    double Y = cursorPosition.Y - logicElementOffset.Y - (positionYMain - positionY);
+                    double X = cursorPosition.X - logicElementOffset.X - (positionXMain - positionX);
+                    Canvas.SetTop(uIElement, Y);
+                    Canvas.SetLeft(uIElement, X);
+                }
             }
         }
 
         private void LogicElement_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (logicElements == null)
+            if (logicElement == null)
                 return;
 
-            //Point position = e.GetPosition(sender as Canvas);
-            //if (position.X < Toolbox.ActualWidth)
-            //{
-            //    Canvas.SetTop(logicElement, 50);
-            //    Canvas.SetLeft(logicElement, 50);
-            //}
-            //Panel.SetZIndex(logicElement, 0);
-            logicElement?.ReleaseMouseCapture();
+            Point position = e.GetPosition(sender as Canvas);
+            foreach (UIElement uIElement in logicElement)
+            {
+                if (position.X < Toolbox.ActualWidth)
+                {
+                    Canvas.SetTop(uIElement, 50);
+                    Canvas.SetLeft(uIElement, 50);
+                }
+                Panel.SetZIndex(uIElement, 0);
+            }
+            currentUIElement?.ReleaseMouseCapture();
+            currentUIElement = null;
             logicElement = null;
-            logicElements = null;
         }
     }
 }
