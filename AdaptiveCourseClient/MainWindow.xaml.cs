@@ -68,24 +68,26 @@ namespace AdaptiveCourseClient
 
             foreach (UIElement uIElement in logicElement)
             {
+                double Y = cursorPosition.Y - logicElementOffset.Y - positionYMain;
+                double X = cursorPosition.X - logicElementOffset.X - positionXMain;
                 if (uIElement is Line)
                 {
                     Line line = (Line)uIElement;
                     double positionX = line.X1;
                     double positionY = line.Y1;
-                    double Y = cursorPosition.Y - logicElementOffset.Y - (positionYMain - positionY);
-                    double X = cursorPosition.X - logicElementOffset.X - (positionXMain - positionX);
+                    Y += positionY;
+                    X += positionX;
                     line.X1 = X;
                     line.Y1 = Y;
-                    line.X2 = X + 9;
+                    line.X2 = X + ElementAND.CircleDiameter / 2;
                     line.Y2 = Y;
                 }
                 else
                 {
                     double positionX = Canvas.GetLeft(uIElement);
                     double positionY = Canvas.GetTop(uIElement);
-                    double Y = cursorPosition.Y - logicElementOffset.Y - (positionYMain - positionY);
-                    double X = cursorPosition.X - logicElementOffset.X - (positionXMain - positionX);
+                    Y += positionY;
+                    X += positionX;
                     Canvas.SetTop(uIElement, Y);
                     Canvas.SetLeft(uIElement, X);
                 }

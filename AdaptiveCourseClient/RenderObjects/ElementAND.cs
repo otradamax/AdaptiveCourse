@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +17,8 @@ namespace AdaptiveCourseClient.RenderObjects
         private Shape rightCircle;
         private Canvas Canvas;
         private UIElementGroup logicBlock;
+
+        public static int CircleDiameter = 16;
 
         public UIElementGroup AddAND(Canvas canvas)
         {
@@ -70,87 +73,78 @@ namespace AdaptiveCourseClient.RenderObjects
             {
                 if (sender is Ellipse)
                 {
-                    double elementPositionX = Canvas.GetLeft((UIElement)sender);
-                    double elementPositionY = Canvas.GetTop((UIElement)sender);
-                    Line line = AddLine();
-                    if (sender == leftFirstCircle || sender == leftSecondCircle)
-                    {
-                        line.X1 = elementPositionX;
-                        line.Y1 = elementPositionY + 6;
-                        line.X2 = elementPositionX + 9;
-                        line.Y2 = elementPositionY + 6;
-                    }
-                    else if (sender == rightCircle)
-                    {
-                        line.X1 = elementPositionX + 6;
-                        line.Y1 = elementPositionY + 6;
-                        line.X2 = elementPositionX + 15;
-                        line.Y2 = elementPositionY + 6;
-                    }
-                    if (sender == leftFirstCircle)
-                    {
-                        leftFirstCircle = line;
-                        leftFirstCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-                    }
-                    else if (sender == leftSecondCircle)
-                    {
-                        leftSecondCircle = line;
-                        leftSecondCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-                    }
-                    else if (sender == rightCircle)
-                    {
-                        rightCircle = line;
-                        rightCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-                    }
-                    Canvas.Children.Remove((UIElement)sender);
-                    logicBlock.Remove((UIElement)sender);
-                    Canvas.Children.Add(line);
-                    logicBlock.Add(line);
+                    ChangeEllipseToLine(sender);
                 }
                 else if (sender is Line)
                 {
-                    Line selectedLine = (Line)sender;
-                    double elementPositionX = selectedLine.X1;
-                    double elementPositionY = selectedLine.Y1;
-                    Ellipse circle = AddCircle();
-                    if (sender == leftFirstCircle || sender == leftSecondCircle)
-                    {
-                        Canvas.SetLeft(circle, elementPositionX);
-                        Canvas.SetTop(circle, elementPositionY - 6);
-                    }
-                    else if (sender == rightCircle)
-                    {
-                        Canvas.SetLeft(circle, elementPositionX - 6);
-                        Canvas.SetTop(circle, elementPositionY - 6);
-                    }
-                    if (sender == leftFirstCircle)
-                    {
-                        leftFirstCircle = circle;
-                        leftFirstCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-                    }
-                    else if (sender == leftSecondCircle)
-                    {
-                        leftSecondCircle = circle;
-                        leftSecondCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-                    }
-                    else if (sender == rightCircle)
-                    {
-                        rightCircle = circle;
-                        rightCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-                    }
-                    Canvas.Children.Remove((UIElement)sender);
-                    logicBlock.Remove((UIElement)sender);
-                    Canvas.Children.Add(circle);
-                    logicBlock.Add(circle);
+                    ChangeLineToEllipse(sender);
                 }
             }
+        }
+
+        private void ChangeEllipseToLine(object sender)
+        {
+            double elementPositionX = Canvas.GetLeft((UIElement)sender);
+            double elementPositionY = Canvas.GetTop((UIElement)sender);
+            Line line = AddLine();
+            line.PreviewMouseDown += Circle_PreviewMouseDown;
+            line.Y1 = elementPositionY + CircleDiameter / 2;
+            line.Y2 = elementPositionY + CircleDiameter / 2;
+            if (sender == leftFirstCircle || sender == leftSecondCircle)
+            {
+                line.X1 = elementPositionX;
+                line.X2 = elementPositionX + CircleDiameter / 2;
+                if (sender == leftFirstCircle)
+                    leftFirstCircle = line;
+                else if (sender == leftSecondCircle)
+                    leftSecondCircle = line;
+            }
+            else if (sender == rightCircle)
+            {
+                line.X1 = elementPositionX + CircleDiameter / 2;
+                line.X2 = elementPositionX + CircleDiameter;
+                rightCircle = line;
+            }
+            Canvas.Children.Remove((UIElement)sender);
+            logicBlock.Remove((UIElement)sender);
+            Canvas.Children.Add(line);
+            logicBlock.Add(line);
+        }
+
+        private void ChangeLineToEllipse(object sender)
+        {
+            Line selectedLine = (Line)sender;
+            double elementPositionX = selectedLine.X1;
+            double elementPositionY = selectedLine.Y1;
+            Ellipse circle = AddCircle();
+            circle.PreviewMouseDown += Circle_PreviewMouseDown;
+            Canvas.SetTop(circle, elementPositionY - CircleDiameter / 2);
+
+            if (sender == leftFirstCircle || sender == leftSecondCircle)
+            {
+                Canvas.SetLeft(circle, elementPositionX);
+                if (sender == leftFirstCircle)
+                    leftFirstCircle = circle;
+                else if (sender == leftSecondCircle)
+                    leftSecondCircle = circle;
+            }
+            else if (sender == rightCircle)
+            {
+                Canvas.SetLeft(circle, elementPositionX - CircleDiameter / 2);
+                rightCircle = circle;
+            }
+
+            Canvas.Children.Remove((UIElement)sender);
+            logicBlock.Remove((UIElement)sender);
+            Canvas.Children.Add(circle);
+            logicBlock.Add(circle);
         }
 
         private Ellipse AddCircle()
         {
             Ellipse Circle = new Ellipse();
-            Circle.Width = 15;
-            Circle.Height = 15;
+            Circle.Width = CircleDiameter;
+            Circle.Height = CircleDiameter;
             Circle.Fill = Brushes.White;
             Circle.Stroke = Brushes.Black;
             Circle.StrokeThickness = 3;
