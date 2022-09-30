@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,9 +13,7 @@ namespace AdaptiveCourseClient.RenderObjects
     public class ElementAND
     {
         private Rectangle rectangle;
-        private Shape leftFirstCircle;
-        private Shape leftSecondCircle;
-        private Shape rightCircle;
+        private List<Shape> Inputs;
         private Canvas Canvas;
         private UIElementGroup logicBlock;
 
@@ -23,6 +22,8 @@ namespace AdaptiveCourseClient.RenderObjects
         public UIElementGroup AddAND(Canvas canvas)
         {
             logicBlock = new UIElementGroup();
+            Inputs = new List<Shape>();
+
             this.Canvas = canvas;
             //Main body
             rectangle = AddRectangle();
@@ -32,23 +33,27 @@ namespace AdaptiveCourseClient.RenderObjects
             canvas.Children.Add(rectangle);
 
             //Circles
-            leftFirstCircle = AddCircle();
+            Shape leftFirstCircle = AddCircle();
             Canvas.SetLeft(leftFirstCircle, 44);
             Canvas.SetTop(leftFirstCircle, 60);
             logicBlock.Add(leftFirstCircle);
             canvas.Children.Add(leftFirstCircle);
+            Inputs.Add(leftFirstCircle);
 
-            leftSecondCircle = AddCircle();
+            Shape leftSecondCircle = AddCircle();
             Canvas.SetLeft(leftSecondCircle, 44);
             Canvas.SetTop(leftSecondCircle, 95);
             logicBlock.Add(leftSecondCircle);
             canvas.Children.Add(leftSecondCircle);
+            Inputs.Add(leftSecondCircle);
 
-            rightCircle = AddCircle();
+            Shape rightCircle = AddCircle();
             Canvas.SetLeft(rightCircle, 90);
             Canvas.SetTop(rightCircle, 80);
             logicBlock.Add(rightCircle);
             canvas.Children.Add(rightCircle);
+            Inputs.Add(rightCircle);
+
             return logicBlock;
         }
 
@@ -60,11 +65,45 @@ namespace AdaptiveCourseClient.RenderObjects
             rectangle.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
         }
 
-        public void ChangeInputsOutputs()
+        public void ChangeInputsOutputs(Shape Input = null)
         {
-            leftFirstCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-            leftSecondCircle.PreviewMouseDown += Circle_PreviewMouseDown;
-            rightCircle.PreviewMouseDown += Circle_PreviewMouseDown;
+            if (Input == null)
+            {
+                foreach (Shape input in Inputs)
+                {
+                    input.PreviewMouseDown += Circle_PreviewMouseDown;
+                    input.MouseMove += Circle_MouseMove;
+                    input.MouseLeave += Circle_MouseLeave;
+                }
+            }
+            else
+            {
+                Input.PreviewMouseDown += Circle_PreviewMouseDown;
+                Input.MouseMove += Circle_MouseMove;
+                Input.MouseLeave += Circle_MouseLeave;
+            }
+        }
+
+        private void Circle_MouseLeave(object sender, MouseEventArgs e)
+        {
+            foreach(Shape input in Inputs)
+            {
+                if (sender == input)
+                {
+                    input.Fill = Brushes.White;
+                }
+            }
+        }
+
+        private void Circle_MouseMove(object sender, MouseEventArgs e)
+        {
+            foreach (Shape input in Inputs)
+            {
+                if (sender == input)
+                {
+                    input.Fill = Brushes.Red;
+                }
+            }
         }
 
         private void Circle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -87,26 +126,24 @@ namespace AdaptiveCourseClient.RenderObjects
             double elementPositionX = Canvas.GetLeft((UIElement)sender);
             double elementPositionY = Canvas.GetTop((UIElement)sender);
             Line line = AddLine();
-            line.PreviewMouseDown += Circle_PreviewMouseDown;
+            ChangeInputsOutputs(line);
             line.Y1 = elementPositionY + CircleDiameter / 2;
             line.Y2 = elementPositionY + CircleDiameter / 2;
-            if (sender == leftFirstCircle || sender == leftSecondCircle)
+            if (elementPositionX < Canvas.GetLeft(rectangle))
             {
                 line.X1 = elementPositionX;
                 line.X2 = elementPositionX + CircleDiameter / 2;
-                if (sender == leftFirstCircle)
-                    leftFirstCircle = line;
-                else if (sender == leftSecondCircle)
-                    leftSecondCircle = line;
             }
-            else if (sender == rightCircle)
+            else if (elementPositionX > Canvas.GetLeft(rectangle))
             {
                 line.X1 = elementPositionX + CircleDiameter / 2;
                 line.X2 = elementPositionX + CircleDiameter;
-                rightCircle = line;
             }
+
+            Inputs.Remove((Shape)sender);
             Canvas.Children.Remove((UIElement)sender);
             logicBlock.Remove((UIElement)sender);
+            Inputs.Add(line);
             Canvas.Children.Add(line);
             logicBlock.Add(line);
         }
@@ -117,25 +154,22 @@ namespace AdaptiveCourseClient.RenderObjects
             double elementPositionX = selectedLine.X1;
             double elementPositionY = selectedLine.Y1;
             Ellipse circle = AddCircle();
-            circle.PreviewMouseDown += Circle_PreviewMouseDown;
+            ChangeInputsOutputs(circle);
             Canvas.SetTop(circle, elementPositionY - CircleDiameter / 2);
 
-            if (sender == leftFirstCircle || sender == leftSecondCircle)
+            if (elementPositionX < Canvas.GetLeft(rectangle))
             {
                 Canvas.SetLeft(circle, elementPositionX);
-                if (sender == leftFirstCircle)
-                    leftFirstCircle = circle;
-                else if (sender == leftSecondCircle)
-                    leftSecondCircle = circle;
             }
-            else if (sender == rightCircle)
+            else if (elementPositionX > Canvas.GetLeft(rectangle))
             {
                 Canvas.SetLeft(circle, elementPositionX - CircleDiameter / 2);
-                rightCircle = circle;
             }
 
+            Inputs.Remove((Shape)sender);
             Canvas.Children.Remove((UIElement)sender);
             logicBlock.Remove((UIElement)sender);
+            Inputs.Add(circle);
             Canvas.Children.Add(circle);
             logicBlock.Add(circle);
         }
