@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,176 +10,168 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class ElementAND
     {
-        private Rectangle rectangle;
-        private List<Shape> Inputs;
+        private Rectangle bodyElement;
+        private Shape rightInput;
+        private Ellipse rightInputAround;
         private Canvas Canvas;
         private UIElementGroup logicBlock;
 
-        public static int CircleDiameter = 16;
+        public static int circleDiameter = 16;
+        private static int circleAroundDiameter = 15;
+        private static int mainBodyWidth = 50;
+        private static int mainBodyHeight = 70;
+        private static int mainDodyInitialX = 50;
+        private static int mainDodyInitialY = 50;
+        private static int inputLineWidth = 8;
+        private static int leftInputsNumber = 2;
 
         public UIElementGroup AddAND(Canvas canvas)
         {
             logicBlock = new UIElementGroup();
-            Inputs = new List<Shape>();
 
             this.Canvas = canvas;
             //Main body
-            rectangle = AddRectangle();
-            Canvas.SetLeft(rectangle, 50);
-            Canvas.SetTop(rectangle, 50);
-            logicBlock.Add(rectangle);
-            canvas.Children.Add(rectangle);
+            bodyElement = AddRectangle();
+            Canvas.SetLeft(bodyElement, mainDodyInitialX);
+            Canvas.SetTop(bodyElement, mainDodyInitialY);
+            logicBlock.Add(bodyElement);
+            canvas.Children.Add(bodyElement);
 
-            //Circles
-            Shape leftFirstCircle = AddCircle();
-            Canvas.SetLeft(leftFirstCircle, 44);
-            Canvas.SetTop(leftFirstCircle, 60);
-            logicBlock.Add(leftFirstCircle);
-            canvas.Children.Add(leftFirstCircle);
-            Inputs.Add(leftFirstCircle);
+            //Inputs
+            for (int i = 0; i < leftInputsNumber; i++)
+            {
+                double relativeHeight = mainBodyHeight * ((double)(i + 1) / (leftInputsNumber + 1));
+                //Inputs
+                Line leftInputLine = AddLine();
+                leftInputLine.X1 = mainDodyInitialX - inputLineWidth;
+                leftInputLine.Y1 = mainDodyInitialY + (relativeHeight);
+                leftInputLine.X2 = mainDodyInitialX;
+                leftInputLine.Y2 = mainDodyInitialY + (relativeHeight);
+                logicBlock.Add(leftInputLine);
+                canvas.Children.Add(leftInputLine);
+            }
 
-            Shape leftSecondCircle = AddCircle();
-            Canvas.SetLeft(leftSecondCircle, 44);
-            Canvas.SetTop(leftSecondCircle, 95);
-            logicBlock.Add(leftSecondCircle);
-            canvas.Children.Add(leftSecondCircle);
-            Inputs.Add(leftSecondCircle);
-
-            Shape rightCircle = AddCircle();
-            Canvas.SetLeft(rightCircle, 90);
-            Canvas.SetTop(rightCircle, 80);
-            logicBlock.Add(rightCircle);
-            canvas.Children.Add(rightCircle);
-            Inputs.Add(rightCircle);
+            Line rightLine = AddLine();
+            rightLine.X1 = mainDodyInitialX + mainBodyWidth;
+            rightLine.Y1 = mainDodyInitialY + ((double)mainBodyHeight / 2);
+            rightLine.X2 = mainDodyInitialX + mainBodyWidth + inputLineWidth;
+            rightLine.Y2 = mainDodyInitialY + ((double)mainBodyHeight / 2);
+            logicBlock.Add(rightLine);
+            canvas.Children.Add(rightLine);
+            rightInput = rightLine;
 
             return logicBlock;
+        }
+
+        public UIElement AddRightInputAround(Canvas canvas)
+        {
+            Ellipse rightInputAround = AddInputAroundCircle();
+            Canvas.SetLeft(rightInputAround, mainDodyInitialX + mainBodyWidth);
+            Canvas.SetTop(rightInputAround, mainDodyInitialY + (double)(mainBodyHeight / 2) -
+                (double)(circleAroundDiameter / 2));
+            logicBlock.Add(rightInputAround);
+            canvas.Children.Add(rightInputAround);
+            this.rightInputAround = rightInputAround;
+            return rightInputAround;
         }
 
         public void MoveLogicBlock(MouseButtonEventHandler LogicElementAND_PreviewMouseLeftButtonDown,
             MouseEventHandler LogicElement_PreviewMouseMove, MouseButtonEventHandler LogicElement_PreviewMouseLeftButtonUp)
         {
-            rectangle.PreviewMouseLeftButtonDown += LogicElementAND_PreviewMouseLeftButtonDown;
-            rectangle.PreviewMouseMove += LogicElement_PreviewMouseMove;
-            rectangle.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
+            bodyElement.PreviewMouseLeftButtonDown += LogicElementAND_PreviewMouseLeftButtonDown;
+            bodyElement.PreviewMouseMove += LogicElement_PreviewMouseMove;
+            bodyElement.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
+            bodyElement.PreviewMouseDown += Body_PreviewMouseDown;
         }
 
-        public void ChangeInputsOutputs(Shape Input = null)
+        public void ChangeInputsOutputs()
         {
-            if (Input == null)
-            {
-                foreach (Shape input in Inputs)
-                {
-                    input.PreviewMouseDown += Circle_PreviewMouseDown;
-                    input.MouseMove += Circle_MouseMove;
-                    input.MouseLeave += Circle_MouseLeave;
-                }
-            }
-            else
-            {
-                Input.PreviewMouseDown += Circle_PreviewMouseDown;
-                Input.MouseMove += Circle_MouseMove;
-                Input.MouseLeave += Circle_MouseLeave;
-            }
+            rightInputAround.MouseLeave += RightInput_MouseLeave;
+            rightInputAround.MouseMove += RightInput_MouseMove;
         }
 
-        private void Circle_MouseLeave(object sender, MouseEventArgs e)
+        private void RightInput_MouseLeave(object sender, MouseEventArgs e)
         {
-            foreach(Shape input in Inputs)
+            if (sender == rightInputAround)
             {
-                if (sender == input)
-                {
-                    input.Fill = Brushes.White;
-                }
+                rightInputAround.Stroke = Brushes.Transparent;
             }
         }
 
-        private void Circle_MouseMove(object sender, MouseEventArgs e)
+        private void RightInput_MouseMove(object sender, MouseEventArgs e)
         {
-            foreach (Shape input in Inputs)
+            if (sender == rightInputAround)
             {
-                if (sender == input)
-                {
-                    input.Fill = Brushes.Red;
-                }
+                rightInputAround.Stroke = Brushes.Red;
             }
         }
 
-        private void Circle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        private void Body_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount >= 2)
             {
-                if (sender is Ellipse)
+                if (rightInput is Ellipse)
                 {
-                    ChangeEllipseToLine(sender);
+                    ChangeEllipseToLine((Ellipse)rightInput);
                 }
-                else if (sender is Line)
+                else if (rightInput is Line)
                 {
-                    ChangeLineToEllipse(sender);
+                    ChangeLineToEllipse((Line)rightInput);
                 }
             }
         }
 
-        private void ChangeEllipseToLine(object sender)
+        private void ChangeEllipseToLine(Ellipse rightEllipse)
         {
-            double elementPositionX = Canvas.GetLeft((UIElement)sender);
-            double elementPositionY = Canvas.GetTop((UIElement)sender);
+            double elementPositionX = Canvas.GetLeft(rightEllipse);
+            double elementPositionY = Canvas.GetTop(rightEllipse);
             Line line = AddLine();
-            ChangeInputsOutputs(line);
-            line.Y1 = elementPositionY + CircleDiameter / 2;
-            line.Y2 = elementPositionY + CircleDiameter / 2;
-            if (elementPositionX < Canvas.GetLeft(rectangle))
-            {
-                line.X1 = elementPositionX;
-                line.X2 = elementPositionX + CircleDiameter / 2;
-            }
-            else if (elementPositionX > Canvas.GetLeft(rectangle))
-            {
-                line.X1 = elementPositionX + CircleDiameter / 2;
-                line.X2 = elementPositionX + CircleDiameter;
-            }
+            line.Y1 = elementPositionY + circleDiameter / 2;
+            line.Y2 = elementPositionY + circleDiameter / 2;
+            line.X1 = elementPositionX + circleDiameter / 2;
+            line.X2 = elementPositionX + circleDiameter;
 
-            Inputs.Remove((Shape)sender);
-            Canvas.Children.Remove((UIElement)sender);
-            logicBlock.Remove((UIElement)sender);
-            Inputs.Add(line);
-            Canvas.Children.Add(line);
-            logicBlock.Add(line);
+            int index = Canvas.Children.IndexOf(rightEllipse);
+            Canvas.Children.Remove(rightEllipse);
+            logicBlock.Replace(rightEllipse, line);
+            rightInput = line;
+            Canvas.Children.Insert(index, line);
         }
 
-        private void ChangeLineToEllipse(object sender)
+        private void ChangeLineToEllipse(Line rightLine)
         {
-            Line selectedLine = (Line)sender;
-            double elementPositionX = selectedLine.X1;
-            double elementPositionY = selectedLine.Y1;
-            Ellipse circle = AddCircle();
-            ChangeInputsOutputs(circle);
-            Canvas.SetTop(circle, elementPositionY - CircleDiameter / 2);
+            double elementPositionX = rightLine.X1;
+            double elementPositionY = rightLine.Y1;
+            Ellipse circle = AddInputCircle();
+            Canvas.SetTop(circle, elementPositionY - circleDiameter / 2);
+            Canvas.SetLeft(circle, elementPositionX - circleDiameter / 2);
 
-            if (elementPositionX < Canvas.GetLeft(rectangle))
-            {
-                Canvas.SetLeft(circle, elementPositionX);
-            }
-            else if (elementPositionX > Canvas.GetLeft(rectangle))
-            {
-                Canvas.SetLeft(circle, elementPositionX - CircleDiameter / 2);
-            }
-
-            Inputs.Remove((Shape)sender);
-            Canvas.Children.Remove((UIElement)sender);
-            logicBlock.Remove((UIElement)sender);
-            Inputs.Add(circle);
-            Canvas.Children.Add(circle);
-            logicBlock.Add(circle);
+            int index = Canvas.Children.IndexOf(rightLine);
+            Canvas.Children.Remove(rightLine);
+            logicBlock.Replace(rightLine, circle);
+            rightInput = circle;
+            Canvas.Children.Insert(index, circle);
         }
 
-        private Ellipse AddCircle()
+        private Ellipse AddInputCircle()
         {
             Ellipse Circle = new Ellipse();
-            Circle.Width = CircleDiameter;
-            Circle.Height = CircleDiameter;
+            Circle.Width = circleDiameter;
+            Circle.Height = circleDiameter;
             Circle.Fill = Brushes.White;
             Circle.Stroke = Brushes.Black;
             Circle.StrokeThickness = 3;
+            return Circle;
+        }
+
+        private Ellipse AddInputAroundCircle()
+        {
+            Ellipse Circle = new Ellipse();
+            Circle.Width = circleAroundDiameter;
+            Circle.Height = circleAroundDiameter;
+            Circle.Fill = Brushes.Transparent;
+            Circle.Stroke = Brushes.Transparent;
+            Circle.StrokeThickness = 1;
             return Circle;
         }
 
@@ -199,8 +189,8 @@ namespace AdaptiveCourseClient.RenderObjects
             Rectangle rectangle = new Rectangle();
             ImageBrush imgBrush = new ImageBrush();
             imgBrush.ImageSource = new BitmapImage(new Uri(@"../../../../images/and.png", UriKind.Relative));
-            rectangle.Width = 50;
-            rectangle.Height = 70;
+            rectangle.Width = mainBodyWidth;
+            rectangle.Height = mainBodyHeight;
             rectangle.RadiusX = 3;
             rectangle.RadiusY = 3;
             rectangle.Fill = imgBrush;

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Windows;
+using System.Xml.Linq;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
@@ -27,6 +28,16 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             if (this.uIElements.Contains(uIElement))
                 this.uIElements.Remove(uIElement);
+        }
+
+        public void Replace(UIElement uIElementRemove, UIElement uIElementAdd)
+        {
+            if (this.uIElements.Contains(uIElementRemove))
+            {
+                int index = this.uIElements.IndexOf(uIElementRemove);
+                this.uIElements.Remove(uIElementRemove);
+                this.uIElements.Insert(index, uIElementAdd);
+            }
         }
 
         public bool Contains(UIElement uIElement)
