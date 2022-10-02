@@ -12,9 +12,9 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         private Rectangle bodyElement;
         private Shape rightInput;
-        private Ellipse rightInputAround;
+        public Ellipse rightInputAround;
         private Canvas Canvas;
-        private UIElementGroup logicBlock;
+        public UIElementGroup logicBlock;
 
         public static int circleDiameter = 16;
         private static int circleAroundDiameter = 15;
@@ -25,7 +25,7 @@ namespace AdaptiveCourseClient.RenderObjects
         private static int inputLineWidth = 8;
         private static int leftInputsNumber = 2;
 
-        public UIElementGroup AddAND(Canvas canvas)
+        public void AddAND(Canvas canvas)
         {
             logicBlock = new UIElementGroup();
 
@@ -59,8 +59,6 @@ namespace AdaptiveCourseClient.RenderObjects
             logicBlock.Add(rightLine);
             canvas.Children.Add(rightLine);
             rightInput = rightLine;
-
-            return logicBlock;
         }
 
         public UIElement AddRightInputAround(Canvas canvas)
@@ -84,10 +82,16 @@ namespace AdaptiveCourseClient.RenderObjects
             bodyElement.PreviewMouseDown += Body_PreviewMouseDown;
         }
 
-        public void ChangeInputsOutputs()
+        public void AddInputsAroundColoring()
         {
             rightInputAround.MouseLeave += RightInput_MouseLeave;
             rightInputAround.MouseMove += RightInput_MouseMove;
+        }
+
+        public void RemoveInputsAroundColoring()
+        {
+            rightInputAround.MouseLeave -= RightInput_MouseLeave;
+            rightInputAround.MouseMove -= RightInput_MouseMove;
         }
 
         private void RightInput_MouseLeave(object sender, MouseEventArgs e)
