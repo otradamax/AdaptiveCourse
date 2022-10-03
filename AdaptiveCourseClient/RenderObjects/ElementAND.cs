@@ -15,25 +15,27 @@ namespace AdaptiveCourseClient.RenderObjects
         public Ellipse rightInputAround;
         private Canvas Canvas;
         public UIElementGroup logicBlock;
+        public UIElementGroup leftInputsAround;
 
         public static int circleDiameter = 16;
-        private static int circleAroundDiameter = 15;
+        public static int circleAroundDiameter = 16;
         private static int mainBodyWidth = 50;
         private static int mainBodyHeight = 70;
-        private static int mainDodyInitialX = 50;
-        private static int mainDodyInitialY = 50;
+        private static int mainBodyInitialX = 50;
+        private static int mainBodyInitialY = 50;
         private static int inputLineWidth = 8;
         private static int leftInputsNumber = 2;
 
         public void AddAND(Canvas canvas)
         {
             logicBlock = new UIElementGroup();
+            leftInputsAround = new UIElementGroup();
 
             this.Canvas = canvas;
             //Main body
             bodyElement = AddRectangle();
-            Canvas.SetLeft(bodyElement, mainDodyInitialX);
-            Canvas.SetTop(bodyElement, mainDodyInitialY);
+            Canvas.SetLeft(bodyElement, mainBodyInitialX);
+            Canvas.SetTop(bodyElement, mainBodyInitialY);
             logicBlock.Add(bodyElement);
             canvas.Children.Add(bodyElement);
 
@@ -43,19 +45,19 @@ namespace AdaptiveCourseClient.RenderObjects
                 double relativeHeight = mainBodyHeight * ((double)(i + 1) / (leftInputsNumber + 1));
                 //Inputs
                 Line leftInputLine = AddLine();
-                leftInputLine.X1 = mainDodyInitialX - inputLineWidth;
-                leftInputLine.Y1 = mainDodyInitialY + (relativeHeight);
-                leftInputLine.X2 = mainDodyInitialX;
-                leftInputLine.Y2 = mainDodyInitialY + (relativeHeight);
+                leftInputLine.X1 = mainBodyInitialX - inputLineWidth;
+                leftInputLine.Y1 = mainBodyInitialY + (relativeHeight);
+                leftInputLine.X2 = mainBodyInitialX;
+                leftInputLine.Y2 = mainBodyInitialY + (relativeHeight);
                 logicBlock.Add(leftInputLine);
                 canvas.Children.Add(leftInputLine);
             }
 
             Line rightLine = AddLine();
-            rightLine.X1 = mainDodyInitialX + mainBodyWidth;
-            rightLine.Y1 = mainDodyInitialY + ((double)mainBodyHeight / 2);
-            rightLine.X2 = mainDodyInitialX + mainBodyWidth + inputLineWidth;
-            rightLine.Y2 = mainDodyInitialY + ((double)mainBodyHeight / 2);
+            rightLine.X1 = mainBodyInitialX + mainBodyWidth;
+            rightLine.Y1 = mainBodyInitialY + ((double)mainBodyHeight / 2);
+            rightLine.X2 = mainBodyInitialX + mainBodyWidth + inputLineWidth;
+            rightLine.Y2 = mainBodyInitialY + ((double)mainBodyHeight / 2);
             logicBlock.Add(rightLine);
             canvas.Children.Add(rightLine);
             rightInput = rightLine;
@@ -64,13 +66,31 @@ namespace AdaptiveCourseClient.RenderObjects
         public UIElement AddRightInputAround(Canvas canvas)
         {
             Ellipse rightInputAround = AddInputAroundCircle();
-            Canvas.SetLeft(rightInputAround, mainDodyInitialX + mainBodyWidth);
-            Canvas.SetTop(rightInputAround, mainDodyInitialY + (double)(mainBodyHeight / 2) -
+            Canvas.SetLeft(rightInputAround, mainBodyInitialX + mainBodyWidth);
+            Canvas.SetTop(rightInputAround, mainBodyInitialY + (double)(mainBodyHeight / 2) -
                 (double)(circleAroundDiameter / 2));
             logicBlock.Add(rightInputAround);
             canvas.Children.Add(rightInputAround);
             this.rightInputAround = rightInputAround;
             return rightInputAround;
+        }
+
+        public UIElementGroup AddLeftInputAround(Canvas canvas)
+        {
+            UIElementGroup leftInputsAround = new UIElementGroup();
+            
+            for(int i = 0; i < leftInputsNumber; i++)
+            {
+                Ellipse leftInputAround = AddInputAroundCircle();
+                Canvas.SetLeft(leftInputAround, mainBodyInitialX - circleAroundDiameter);
+                Canvas.SetTop(leftInputAround, mainBodyInitialY + mainBodyHeight * ((double)(i + 1) / (leftInputsNumber + 1)) - 
+                    (double)(circleAroundDiameter / 2));
+                logicBlock.Add(leftInputAround);
+                canvas.Children.Add(leftInputAround);
+                this.leftInputsAround.Add(leftInputAround);
+            }
+            
+            return leftInputsAround;
         }
 
         public void MoveLogicBlock(MouseButtonEventHandler LogicElementAND_PreviewMouseLeftButtonDown,
@@ -82,13 +102,13 @@ namespace AdaptiveCourseClient.RenderObjects
             bodyElement.PreviewMouseDown += Body_PreviewMouseDown;
         }
 
-        public void AddInputsAroundColoring()
+        public void AddRightInputsAroundColoring()
         {
             rightInputAround.MouseLeave += RightInput_MouseLeave;
             rightInputAround.MouseMove += RightInput_MouseMove;
         }
 
-        public void RemoveInputsAroundColoring()
+        public void RemoveRightInputsAroundColoring()
         {
             rightInputAround.MouseLeave -= RightInput_MouseLeave;
             rightInputAround.MouseMove -= RightInput_MouseMove;

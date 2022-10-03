@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,7 +19,8 @@ namespace AdaptiveCourseClient
         private Shape coloredElement;
         private Point logicElementOffset;
         private List<ElementAND> logicElements;
-        private UIElementGroup Inputs;
+        private UIElementGroup leftInputs;
+        private UIElement rightInput;
         private UIElementGroup ConnectionLines;
 
         private bool isConnectionLineBuilding = false;
@@ -34,7 +36,7 @@ namespace AdaptiveCourseClient
             bodyCanvas.PreviewMouseLeftButtonDown += BodyCanvas_PreviewMouseLeftButtonDown;
 
             logicElements = new List<ElementAND>();
-            Inputs = new UIElementGroup();
+            leftInputs = new UIElementGroup();
             ConnectionLines = new UIElementGroup();
 
             CreateBlocks();
@@ -48,10 +50,11 @@ namespace AdaptiveCourseClient
                 logicElements.Add(elementAND);
                 elementAND.AddAND(bodyCanvas);
                 elementAND.AddRightInputAround(bodyCanvas);
-                elementAND.rightInputAround.PreviewMouseLeftButtonDown += LeftInput_PreviewMouseLeftButtonDown;
+                elementAND.rightInputAround.PreviewMouseLeftButtonDown += Input_PreviewMouseLeftButtonDown;
+                elementAND.AddLeftInputAround(bodyCanvas);
                 elementAND.MoveLogicBlock(LogicElementAND_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
-                elementAND.AddInputsAroundColoring();
+                elementAND.AddRightInputsAroundColoring();
             }
         }
 
@@ -74,10 +77,10 @@ namespace AdaptiveCourseClient
                 leftInput.Points = leftPoints;
                 leftInput.MouseMove += LeftInput_MouseMove;
                 leftInput.MouseLeave += LeftInput_MouseLeave;
-                leftInput.PreviewMouseLeftButtonDown += LeftInput_PreviewMouseLeftButtonDown;
+                leftInput.PreviewMouseLeftButtonDown += Input_PreviewMouseLeftButtonDown;
 
                 bodyCanvas.Children.Add(leftInput);
-                Inputs.Add(leftInput);
+                leftInputs.Add(leftInput);
             }
         }
 
@@ -87,6 +90,7 @@ namespace AdaptiveCourseClient
             rightInput.Fill = Brushes.White;
             rightInput.Stroke = Brushes.Black;
             rightInput.StrokeThickness = 3;
+
             PointCollection points = new PointCollection();
             points.Add(new Point(bodyCanvas.ActualWidth,
                 this.Height / 2 - InputHeight));
@@ -94,7 +98,9 @@ namespace AdaptiveCourseClient
                 this.Height / 2 + InputHeight));
             points.Add(new Point(bodyCanvas.ActualWidth - 40,
                 this.Height / 2));
+
             rightInput.Points = points;
+            this.rightInput = rightInput;
             bodyCanvas.Children.Add(rightInput);
         }
 
@@ -113,43 +119,128 @@ namespace AdaptiveCourseClient
                     coloredElement.Stroke = Brushes.Transparent;
                 else if (coloredElement is Polygon)
                     coloredElement.Stroke = Brushes.Black;
-                AddEventsForInputs();
+                ColorAllLeftInputs(false);
+                RemoveEventsForLeftInputs();
+                AddEventsForRightInputs();
             }
         }
 
-        private void LeftInput_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Input_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (!isConnectionLineBuilding)
             {
                 isConnectionLineBuilding = true;
                 coloredElement = (Shape)sender;
-                RemoveEventsForInputs();
+                coloredElement.Stroke = Brushes.DarkGreen;
+                ColorAllLeftInputs(true);
+                RemoveEventsForRightInputs();
+                AddEventsForLeftInputs();
             }
         }
 
-        private void AddEventsForInputs()
+        private void ColorAllLeftInputs(bool isSelected)
         {
-            foreach (UIElement uIElement in Inputs)
+            foreach(ElementAND elementAND in logicElements)
+            {
+                foreach(UIElement leftInput in elementAND.leftInputsAround)
+                {
+                    Shape leftInputAround = (Ellipse)leftInput;
+                    leftInputAround.Stroke = isSelected ? Brushes.Red : Brushes.Transparent;
+                }
+            }
+            Shape rightInputAround = (Polygon)rightInput;
+            rightInputAround.Stroke = isSelected ? Brushes.Red : Brushes.Black;
+        }
+
+        private void AddEventsForRightInputs()
+        {
+            foreach (UIElement uIElement in leftInputs)
             {
                 uIElement.MouseMove += LeftInput_MouseMove;
                 uIElement.MouseLeave += LeftInput_MouseLeave;
             }
             foreach (ElementAND uIElement in logicElements)
             {
-                uIElement.AddInputsAroundColoring();
+                uIElement.AddRightInputsAroundColoring();
             }
         }
 
-        private void RemoveEventsForInputs()
+        private void RemoveEventsForRightInputs()
         {
-            foreach (UIElement uIElement in Inputs)
+            foreach (UIElement uIElement in leftInputs)
             {
                 uIElement.MouseMove -= LeftInput_MouseMove;
                 uIElement.MouseLeave -= LeftInput_MouseLeave;
             }
             foreach (ElementAND uIElement in logicElements)
             {
-                uIElement.RemoveInputsAroundColoring();
+                uIElement.RemoveRightInputsAroundColoring();
+            }
+        }
+
+        private void AddEventsForLeftInputs()
+        {
+            rightInput.MouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
+            foreach (ElementAND uIElement in logicElements)
+            {
+                foreach(UIElement leftInputAround in uIElement.leftInputsAround)
+                {
+                    leftInputAround.MouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
+                }
+            }
+        }
+
+        private void LeftInput_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            Polyline ConnectionLine = new Polyline();
+
+            PointCollection points = new PointCollection();
+            Point firstPoint = new Point();
+            if (coloredElement is Polygon)
+            {
+                Polygon polygon = (Polygon)coloredElement;
+                firstPoint = polygon.Points.Last();
+            }
+            else if(coloredElement is Ellipse)
+            {
+                firstPoint = new Point(Canvas.GetLeft(coloredElement) + ElementAND.circleAroundDiameter / 2,
+                    Canvas.GetTop(coloredElement) + ElementAND.circleAroundDiameter / 2);
+            }
+            Point lastPoint = new Point();
+            if (sender is Polygon)
+            {
+                Polygon polygon = (Polygon)sender;
+                lastPoint = polygon.Points.Last();
+            }
+            else if (sender is Ellipse)
+            {
+                lastPoint = new Point(Canvas.GetLeft((Ellipse)sender) + ElementAND.circleAroundDiameter / 2,
+                    Canvas.GetTop((Ellipse)sender) + ElementAND.circleAroundDiameter / 2);
+            }
+            double fractureX = (firstPoint.X + lastPoint.X) / 2;
+            points.Add(firstPoint);
+            points.Add(new Point(fractureX, firstPoint.Y));
+            points.Add(new Point(fractureX, lastPoint.Y));
+            points.Add(lastPoint);
+
+            ConnectionLine.Stroke = Brushes.Black;
+            ConnectionLine.StrokeThickness = 3;
+            ConnectionLine.Points = points;
+
+            bodyCanvas.Children.Add(ConnectionLine);
+            ConnectionLines.Add(ConnectionLine);
+            RemoveEventsForLeftInputs();
+        }
+
+        private void RemoveEventsForLeftInputs()
+        {
+            rightInput.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
+            foreach (ElementAND uIElement in logicElements)
+            {
+                foreach (UIElement leftInputAround in uIElement.leftInputsAround)
+                {
+                    leftInputAround.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
+                }
             }
         }
 
@@ -216,6 +307,7 @@ namespace AdaptiveCourseClient
                     double positionY = line.Y1;
                     Y += positionY;
                     X += positionX;
+                    MoveConnectionLines(line, X, Y);
                     line.X1 = X;
                     line.Y1 = Y;
                     line.X2 = X + ElementAND.circleDiameter / 2;
@@ -229,6 +321,34 @@ namespace AdaptiveCourseClient
                     X += positionX;
                     Canvas.SetTop(uIElement, Y);
                     Canvas.SetLeft(uIElement, X);
+                }
+            }
+        }
+
+        private void MoveConnectionLines(Line input, double newX, double newY)
+        {
+            foreach(UIElement line in ConnectionLines)
+            {
+                Polyline connectionLine = (Polyline)line;
+                Point firstConnectionPoint = connectionLine.Points[0];
+                Point lastConnectionPoint = connectionLine.Points.Last();
+                // Left input
+                if ((firstConnectionPoint.X == input.X1) && (firstConnectionPoint.Y == input.Y1))
+                {
+                    connectionLine.Points[0] = new Point(newX, newY);
+                }
+                else if((lastConnectionPoint.X == input.X1) && (lastConnectionPoint.Y == input.Y1))
+                {
+                    connectionLine.Points[connectionLine.Points.Count - 1] = new Point(newX, newY);
+                }
+                // Right input
+                else if ((firstConnectionPoint.X == input.X2) && (firstConnectionPoint.Y == input.Y2))
+                {
+                    connectionLine.Points[0] = new Point(newX + ElementAND.circleDiameter / 2, newY);
+                }
+                else if ((lastConnectionPoint.X == input.X2) && (lastConnectionPoint.Y == input.Y2))
+                {
+                    connectionLine.Points[connectionLine.Points.Count - 1] = new Point(newX + ElementAND.circleDiameter / 2, newY);
                 }
             }
         }
