@@ -42,6 +42,16 @@ namespace AdaptiveCourseClient
             CreateBlocks();
         }
 
+        private void BodyCanvas_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                if (ConnectionLines.Contains(currentUIElement)){
+                    ConnectionLines.Remove(currentUIElement);
+                }
+            }
+        }
+
         private void CreateBlocks()
         {
             for (int i = 0; i < 3; i++)
@@ -224,13 +234,23 @@ namespace AdaptiveCourseClient
             points.Add(lastPoint);
 
             ConnectionLine.Stroke = Brushes.Black;
-            ConnectionLine.StrokeThickness = 3;
+            ConnectionLine.StrokeThickness = 2;
             ConnectionLine.Points = points;
+            ConnectionLine.PreviewMouseLeftButtonDown += ConnectionLine_PreviewMouseLeftButtonDown;
 
             bodyCanvas.Children.Add(ConnectionLine);
             ConnectionLines.Add(ConnectionLine);
             RemoveEventsForLeftInputs();
         }
+
+        private void ConnectionLine_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            currentUIElement = (UIElement)sender;
+            Polyline selectedLine = (Polyline)sender;
+            selectedLine.StrokeThickness = 5;
+        }
+
+
 
         private void RemoveEventsForLeftInputs()
         {
@@ -335,22 +355,33 @@ namespace AdaptiveCourseClient
                 // Left input
                 if ((firstConnectionPoint.X == input.X1) && (firstConnectionPoint.Y == input.Y1))
                 {
-                    connectionLine.Points[0] = new Point(newX, newY);
+                    connectionLine.Points = MoveConnectionLinePoints(connectionLine.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
                 }
                 else if((lastConnectionPoint.X == input.X1) && (lastConnectionPoint.Y == input.Y1))
                 {
-                    connectionLine.Points[connectionLine.Points.Count - 1] = new Point(newX, newY);
+                    connectionLine.Points = MoveConnectionLinePoints(new PointCollection(connectionLine.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
                 }
                 // Right input
                 else if ((firstConnectionPoint.X == input.X2) && (firstConnectionPoint.Y == input.Y2))
                 {
-                    connectionLine.Points[0] = new Point(newX + ElementAND.circleDiameter / 2, newY);
+                    connectionLine.Points =  MoveConnectionLinePoints(connectionLine.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
                 }
                 else if ((lastConnectionPoint.X == input.X2) && (lastConnectionPoint.Y == input.Y2))
                 {
-                    connectionLine.Points[connectionLine.Points.Count - 1] = new Point(newX + ElementAND.circleDiameter / 2, newY);
+                    connectionLine.Points =  MoveConnectionLinePoints(new PointCollection(connectionLine.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
+                    
                 }
             }
+        }
+
+        private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX)
+        {
+            PointCollection points = new PointCollection();
+            points.Add(new Point(newX, newY));
+            points.Add(new Point(connectionLineX, newY));
+            points.Add(new Point(connectionLineX, connectionLine[2].Y));
+            points.Add(new Point(connectionLine[3].X, connectionLine[3].Y));
+            return points;
         }
 
         private void LogicElement_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
