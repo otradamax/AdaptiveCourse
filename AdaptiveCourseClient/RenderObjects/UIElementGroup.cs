@@ -1,13 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Windows;
-using System.Xml.Linq;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
     public class UIElementGroup : IEnumerable
     {
-        private List<UIElement> uIElements;
+        private List<UIElement> uIElements { get; set; }
 
         public UIElementGroup()
         {
