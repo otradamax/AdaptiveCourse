@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -14,14 +15,14 @@ namespace AdaptiveCourseClient
     /// </summary>
     public partial class MainWindow : Window
     {
-        private UIElement? currentUIElement;
-        private UIElementGroup? logicElement;
-        private Shape coloredElement;
+        private UIElement? currentUIElement { get; set; }
+        private UIElementGroup? logicElement { get; set; }
+        private Shape coloredElement { get; set; }
         private Point logicElementOffset;
-        private List<ElementAND> logicElements;
-        private UIElementGroup leftInputs;
-        private UIElement rightInput;
-        private UIElementGroup ConnectionLines;
+        private List<ElementAND> logicElements { get; set; }
+        private UIElementGroup leftInputs { get; set; }
+        private UIElement rightInput { get; set; }
+        private UIElementGroup ConnectionLines { get; set; }
 
         private bool isConnectionLineBuilding = false;
 
@@ -48,6 +49,8 @@ namespace AdaptiveCourseClient
             {
                 if (ConnectionLines.Contains(currentUIElement)){
                     ConnectionLines.Remove(currentUIElement);
+                    bodyCanvas.Children.Remove(currentUIElement);
+                    currentUIElement = null;
                 }
             }
         }
@@ -125,13 +128,16 @@ namespace AdaptiveCourseClient
             if (isConnectionLineBuilding)
             {
                 isConnectionLineBuilding = false;
-                if (coloredElement is Ellipse)
-                    coloredElement.Stroke = Brushes.Transparent;
-                else if (coloredElement is Polygon)
-                    coloredElement.Stroke = Brushes.Black;
-                ColorAllLeftInputs(false);
-                RemoveEventsForLeftInputs();
-                AddEventsForRightInputs();
+                if (coloredElement.Stroke != Brushes.Black && coloredElement.Stroke != Brushes.Transparent)
+                {
+                    if (coloredElement is Ellipse)
+                        coloredElement.Stroke = Brushes.Transparent;
+                    else if (coloredElement is Polygon)
+                        coloredElement.Stroke = Brushes.Black;
+                    ColorAllLeftInputs(false);
+                    RemoveEventsForLeftInputs();
+                    AddEventsForRightInputs();
+                }
             }
         }
 
@@ -141,10 +147,13 @@ namespace AdaptiveCourseClient
             {
                 isConnectionLineBuilding = true;
                 coloredElement = (Shape)sender;
-                coloredElement.Stroke = Brushes.DarkGreen;
-                ColorAllLeftInputs(true);
-                RemoveEventsForRightInputs();
-                AddEventsForLeftInputs();
+                if (coloredElement.Stroke != Brushes.DarkGreen)
+                {
+                    coloredElement.Stroke = Brushes.DarkGreen;
+                    ColorAllLeftInputs(true);
+                    RemoveEventsForRightInputs();
+                    AddEventsForLeftInputs();
+                }
             }
         }
 
@@ -190,12 +199,24 @@ namespace AdaptiveCourseClient
 
         private void AddEventsForLeftInputs()
         {
-            rightInput.MouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
+            rightInput.PreviewMouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
             foreach (ElementAND uIElement in logicElements)
             {
                 foreach(UIElement leftInputAround in uIElement.leftInputsAround)
                 {
-                    leftInputAround.MouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
+                    leftInputAround.PreviewMouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
+                }
+            }
+        }
+
+        private void RemoveEventsForLeftInputs()
+        {
+            rightInput.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
+            foreach (ElementAND uIElement in logicElements)
+            {
+                foreach (UIElement leftInputAround in uIElement.leftInputsAround)
+                {
+                    leftInputAround.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
                 }
             }
         }
@@ -236,32 +257,32 @@ namespace AdaptiveCourseClient
             ConnectionLine.Stroke = Brushes.Black;
             ConnectionLine.StrokeThickness = 2;
             ConnectionLine.Points = points;
+            ConnectionLine.MouseMove += ConnectionLine_MouseMove;
+            ConnectionLine.MouseLeave += ConnectionLine_MouseLeave;
+            ConnectionLine.KeyDown += BodyCanvas_PreviewKeyDown;
             ConnectionLine.PreviewMouseLeftButtonDown += ConnectionLine_PreviewMouseLeftButtonDown;
 
             bodyCanvas.Children.Add(ConnectionLine);
             ConnectionLines.Add(ConnectionLine);
-            RemoveEventsForLeftInputs();
+        }
+
+        private void ConnectionLine_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Polyline selectedLine = (Polyline)sender;
+            selectedLine.StrokeThickness = 2;
+        }
+
+        private void ConnectionLine_MouseMove(object sender, MouseEventArgs e)
+        {
+            Polyline selectedLine = (Polyline)sender;
+            selectedLine.StrokeThickness = 5;
         }
 
         private void ConnectionLine_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             currentUIElement = (UIElement)sender;
             Polyline selectedLine = (Polyline)sender;
-            selectedLine.StrokeThickness = 5;
-        }
-
-
-
-        private void RemoveEventsForLeftInputs()
-        {
-            rightInput.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
-            foreach (ElementAND uIElement in logicElements)
-            {
-                foreach (UIElement leftInputAround in uIElement.leftInputsAround)
-                {
-                    leftInputAround.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
-                }
-            }
+            selectedLine.Stroke = Brushes.BlueViolet;
         }
 
         private void LeftInput_MouseLeave(object sender, MouseEventArgs e)

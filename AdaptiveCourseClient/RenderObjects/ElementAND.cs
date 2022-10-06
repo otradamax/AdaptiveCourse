@@ -10,12 +10,12 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class ElementAND
     {
-        private Rectangle bodyElement;
-        private Shape rightInput;
-        public Ellipse rightInputAround;
-        private Canvas Canvas;
-        public UIElementGroup logicBlock;
-        public UIElementGroup leftInputsAround;
+        private Rectangle bodyElement { get; set; }
+        private Shape rightInput { get; set; }
+        public Ellipse rightInputAround { get; set; }
+        private Canvas Canvas { get; set; }
+        public UIElementGroup logicBlock { get; set; }
+        public UIElementGroup leftInputsAround { get; set; }
 
         public static int circleDiameter = 16;
         public static int circleAroundDiameter = 16;
