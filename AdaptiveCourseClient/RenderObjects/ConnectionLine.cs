@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AdaptiveCourseClient.Infrastructure;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,16 +16,18 @@ namespace AdaptiveCourseClient.RenderObjects
     public class ConnectionLine
     {
         private MainWindow _window;
-        public Polyline Polyline { get; set; }
+        private Canvas _canvas;
+        public Polyline ConnectionLinePolyline { get; set; }
 
-        public ConnectionLine(MainWindow window)
+        public ConnectionLine(MainWindow window, Canvas canvas)
         {
             _window = window;
+            _canvas = canvas;
         }
 
-        public void AddConnectionLine(Canvas canvas, Point firstPoint, Point lastPoint)
+        public void AddConnectionLine(Point firstPoint, Point lastPoint)
         {
-            Polyline connectionLine = new Polyline();
+            Polyline connectionLine = Figures.AddConnectionLine();
 
             PointCollection points = new PointCollection();
             double fractureX = (firstPoint.X + lastPoint.X) / 2;
@@ -32,18 +36,17 @@ namespace AdaptiveCourseClient.RenderObjects
             points.Add(new Point(fractureX, lastPoint.Y));
             points.Add(lastPoint);
 
-            connectionLine.Stroke = Brushes.Black;
-            connectionLine.StrokeThickness = 2;
             connectionLine.Points = points;
             connectionLine.MouseMove += ConnectionLine_MouseMove;
             connectionLine.MouseLeave += ConnectionLine_MouseLeave;
             connectionLine.PreviewMouseLeftButtonDown += ConnectionLine_PreviewMouseLeftButtonDown;
+            connectionLine.PreviewMouseLeftButtonUp += ConnectionLine_PreviewMouseLeftButtonUp;
 
-            canvas.Children.Add(connectionLine);
-            Polyline = connectionLine;
+            _canvas.Children.Add(connectionLine);
+            ConnectionLinePolyline = connectionLine;
         }
 
-        public void SetColor(Brush color) => Polyline.Stroke = color;
+        public void SetColor(Brush color) => ConnectionLinePolyline.Stroke = color;
 
         private void ConnectionLine_MouseLeave(object sender, MouseEventArgs e)
         {
@@ -53,41 +56,64 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private void ConnectionLine_MouseMove(object sender, MouseEventArgs e)
         {
+            // Connection line stroke width changing
             Polyline selectedLine = (Polyline)sender;
             selectedLine.StrokeThickness = 5;
+
+            //Connection line moving
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point connectionLineCoord = e.GetPosition(_canvas);
+                if (connectionLineCoord.Y > ConnectionLinePolyline.Points[0].Y 
+                    && connectionLineCoord.Y < ConnectionLinePolyline.Points.Last().Y)
+                {
+                    Point cursorPosition = e.GetPosition(sender as Canvas);
+                    ConnectionLinePolyline.Points[1] = new Point(cursorPosition.X, ConnectionLinePolyline.Points[1].Y);
+                    ConnectionLinePolyline.Points[2] = new Point(cursorPosition.X, ConnectionLinePolyline.Points[2].Y);
+                }
+            }
         }
 
         private void ConnectionLine_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (_window.IsConnectionLineSelected)
+                _window.SelectedLine.SetColor(Brushes.Black);
             _window.SelectedLine = this;
-            _window.IsSelected = true;
+            _window.IsConnectionLineSelected = true;
+
+            // Connection line coloring
             Polyline selectedLine = (Polyline)sender;
             selectedLine.Stroke = Brushes.BlueViolet;
+            ConnectionLinePolyline.CaptureMouse();
+        }
+
+        private void ConnectionLine_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            ConnectionLinePolyline.ReleaseMouseCapture();
         }
 
         public void MoveConnectionLine(Line input, double newX, double newY)
         {
             double precision = 0.01;
-            Point firstConnectionPoint = Polyline.Points[0];
-            Point lastConnectionPoint = Polyline.Points.Last();
-            // Left input
+            Point firstConnectionPoint = ConnectionLinePolyline.Points[0];
+            Point lastConnectionPoint = ConnectionLinePolyline.Points.Last();
+
+            // Connection line direction determination
             if (Math.Abs(firstConnectionPoint.X - input.X1) < precision && Math.Abs(firstConnectionPoint.Y - input.Y1) < precision)
             {
-                Polyline.Points = MoveConnectionLinePoints(Polyline.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
             }
             else if (Math.Abs(lastConnectionPoint.X - input.X1) < precision && Math.Abs(lastConnectionPoint.Y - input.Y1) < precision)
             {
-                Polyline.Points = MoveConnectionLinePoints(new PointCollection(Polyline.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
             }
-            // Right input
             else if (Math.Abs(firstConnectionPoint.X - input.X2) < precision && Math.Abs(firstConnectionPoint.Y - input.Y2) < precision)
             {
-                Polyline.Points = MoveConnectionLinePoints(Polyline.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
             }
             else if (Math.Abs(lastConnectionPoint.X - input.X2) < precision && Math.Abs(lastConnectionPoint.Y - input.Y2) < precision)
             {
-                Polyline.Points = MoveConnectionLinePoints(new PointCollection(Polyline.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
-
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
             }
         }
 

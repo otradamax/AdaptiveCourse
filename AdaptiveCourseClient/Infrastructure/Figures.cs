@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -51,6 +52,14 @@ namespace AdaptiveCourseClient.Infrastructure
             rectangle.Stroke = Brushes.Black;
             rectangle.StrokeThickness = 5;
             return rectangle;
+        }
+
+        public static Polyline AddConnectionLine()
+        {
+            Polyline connectionLine = new Polyline();
+            connectionLine.Stroke = Brushes.Black;
+            connectionLine.StrokeThickness = 2;
+            return connectionLine;
         }
     }
 }

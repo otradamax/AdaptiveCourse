@@ -16,7 +16,7 @@ namespace AdaptiveCourseClient
     {
         public UIElement? SelectedLogicElement { get; set; }
         public ConnectionLine SelectedLine { get; set; }
-        public bool IsSelected 
+        public bool IsConnectionLineSelected 
         { 
             get { return _isSelected; } 
             set 
@@ -79,6 +79,8 @@ namespace AdaptiveCourseClient
                 input.Fill = Brushes.White;
                 input.Stroke = Brushes.Black;
                 input.StrokeThickness = 3;
+
+                // Creating a triangle input
                 PointCollection inputPoints = new PointCollection();
                 inputPoints.Add(new Point(Toolbox.ActualWidth,
                     this.Height * ((double)(i + 1) / (_inputsNum + 1)) - _inputWidth));
@@ -104,6 +106,7 @@ namespace AdaptiveCourseClient
             output.Stroke = Brushes.Black;
             output.StrokeThickness = 3;
 
+            // Creating a triangle output
             PointCollection outputPoints = new PointCollection();
             outputPoints.Add(new Point(bodyCanvas.ActualWidth,
                 this.Height / 2 - _inputWidth));
@@ -124,12 +127,9 @@ namespace AdaptiveCourseClient
                 LogicElement element = new LogicElement(bodyCanvas);
                 _logicElements.Add(element);
                 element.AddBlock();
-                element.AddOutputSnap();
                 element.OutputSnap.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
-                element.AddInputsSnap();
-                element.MoveLogicBlockEvents(LogicElementAND_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
+                element.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
-                element.AddOutputSnapColoringEvent();
             }
         }
 
@@ -148,6 +148,7 @@ namespace AdaptiveCourseClient
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            // Event triggers at the end of any action (flag is for detecting actions on the next action)
             if (_isStepEnds)
             {
                 if (IsConnectionLineBuilding)
@@ -161,10 +162,10 @@ namespace AdaptiveCourseClient
                     RemoveEventsForEndingContacts();
                     AddEventsForBeginningContacts();
                 }
-                if (IsSelected)
+                if (IsConnectionLineSelected)
                 {
                     SelectedLine.SetColor(Brushes.Black);
-                    IsSelected = false;
+                    IsConnectionLineSelected = false;
                     SelectedLine = null;
                 }
             }
@@ -176,30 +177,31 @@ namespace AdaptiveCourseClient
 
         private void Canvas_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // Deleting connection line
             if (e.Key == Key.Delete)
             {
                 if (connectionLines.Contains(SelectedLine))
                 {
                     connectionLines.Remove(SelectedLine);
-                    bodyCanvas.Children.Remove(SelectedLine.Polyline);
-                    IsSelected = false;
+                    bodyCanvas.Children.Remove(SelectedLine.ConnectionLinePolyline);
+                    IsConnectionLineSelected = false;
                     SelectedLine = null;
                 }
             }
         }
 
-        private void ColorAllEndingContacts(bool isSelected)
+        private void ColorAllEndingContacts(bool isEndingContactSelected)
         {
             foreach(LogicElement elementAND in _logicElements)
             {
                 foreach(UIElement input in elementAND.InputsSnap)
                 {
                     Shape inputSnap = (Ellipse)input;
-                    inputSnap.Stroke = isSelected ? Brushes.Red : Brushes.Transparent;
+                    inputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Transparent;
                 }
             }
             Shape outnputSnap = (Polygon)_output;
-            outnputSnap.Stroke = isSelected ? Brushes.Red : Brushes.Black;
+            outnputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Black;
         }
 
         private void AddEventsForBeginningContacts()
@@ -257,6 +259,7 @@ namespace AdaptiveCourseClient
             Point firstPoint = new Point();
             Point lastPoint = new Point();
 
+            // Connection line first and last points determination
             if (_beginningContact is Polygon)
             {
                 Polygon polygon = (Polygon)_beginningContact;
@@ -279,8 +282,8 @@ namespace AdaptiveCourseClient
                     Canvas.GetTop((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2);
             }
 
-            ConnectionLine connectionLine = new ConnectionLine(this);
-            connectionLine.AddConnectionLine(bodyCanvas, firstPoint, lastPoint);
+            ConnectionLine connectionLine = new ConnectionLine(this, bodyCanvas);
+            connectionLine.AddConnectionLine(firstPoint, lastPoint);
 
             connectionLines.Add(connectionLine);
         }
@@ -303,9 +306,11 @@ namespace AdaptiveCourseClient
             }
         }
 
-        private void LogicElementAND_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void LogicElement_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             SelectedLogicElement = (UIElement)sender;
+
+            // Selected logic block searching
             foreach(LogicElement logicBlock in _logicElements)
             {
                 if (logicBlock.LogicBlock.Contains(SelectedLogicElement))
@@ -316,6 +321,8 @@ namespace AdaptiveCourseClient
             _logicElementOffset = e.GetPosition(bodyCanvas);
             _logicElementOffset.Y -= Canvas.GetTop(SelectedLogicElement);
             _logicElementOffset.X -= Canvas.GetLeft(SelectedLogicElement);
+
+            // Selected logic block layer prioritization
             if (_logicElement != null)
             {
                 foreach (UIElement uIElement in _logicElement.LogicBlock)
@@ -341,6 +348,16 @@ namespace AdaptiveCourseClient
         {
             if (_logicElement == null)
                 return;
+
+            // Moving logic element to toolbox case
+            if (Canvas.GetLeft(SelectedLogicElement) < Toolbox.ActualWidth)
+            {
+                _logicElement.RemoveBlock();
+                _logicElement.AddBlock();
+                _logicElement.OutputSnap.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
+                _logicElement.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
+                    LogicElement_PreviewMouseLeftButtonUp);
+            }
 
             SelectedLogicElement?.ReleaseMouseCapture();
             SelectedLogicElement = null;

@@ -72,6 +72,18 @@ namespace AdaptiveCourseClient.RenderObjects
             LogicBlock.Add(rightLine);
             _canvas.Children.Add(rightLine);
             _negativeOutputCircle = null;
+
+            AddOutputSnap();
+            AddInputsSnap();
+            AddOutputSnapColoringEvent();
+        }
+
+        public void RemoveBlock()
+        {
+            foreach(UIElement logicElementPart in LogicBlock)
+            {
+                _canvas.Children.Remove(logicElementPart);
+            }
         }
 
         public void AddOutputSnap()
@@ -182,6 +194,8 @@ namespace AdaptiveCourseClient.RenderObjects
             {
                 double Y = cursorPosition.Y - _logicElementOffset.Y - bodyY;
                 double X = cursorPosition.X - _logicElementOffset.X - bodyX;
+
+                // it is an another way of line coordinates determination
                 if (uIElement is Line)
                 {
                     Line contact = (Line)uIElement;
