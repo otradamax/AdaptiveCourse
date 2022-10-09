@@ -3,7 +3,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace AdaptiveCourseClient.RenderObjects
+namespace AdaptiveCourseClient.Infrastructure
 {
     public static class Figures
     {

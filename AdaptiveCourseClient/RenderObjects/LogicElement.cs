@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Xml.Linq;
+using AdaptiveCourseClient.Infrastructure;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
@@ -28,11 +32,15 @@ namespace AdaptiveCourseClient.RenderObjects
         private static readonly int _contactWidth = 8;
         private static readonly int _inputsNumber = 2;
 
-        public void AddBlock(Canvas canvas)
+        public LogicElement(Canvas canvas)
+        {
+            _canvas = canvas;
+        }
+
+        public void AddBlock()
         {
             LogicBlock = new UIElementGroup();
             InputsSnap = new UIElementGroup();
-            _canvas = canvas;
 
             // Main body creation
             _body = Figures.AddBody(_bodyWidth, _bodyHeight);
@@ -40,7 +48,7 @@ namespace AdaptiveCourseClient.RenderObjects
             Canvas.SetLeft(_body, _bodyInitialX);
             Canvas.SetTop(_body, _bodyInitialY);
             LogicBlock.Add(_body);
-            canvas.Children.Add(_body);
+            _canvas.Children.Add(_body);
 
             // Inputs creation
             for (int i = 0; i < _inputsNumber; i++)
@@ -52,7 +60,7 @@ namespace AdaptiveCourseClient.RenderObjects
                 leftInputLine.X2 = _bodyInitialX;
                 leftInputLine.Y2 = _bodyInitialY + (relativeInputY);
                 LogicBlock.Add(leftInputLine);
-                canvas.Children.Add(leftInputLine);
+                _canvas.Children.Add(leftInputLine);
             }
 
             // Output creation
@@ -62,22 +70,22 @@ namespace AdaptiveCourseClient.RenderObjects
             rightLine.X2 = _bodyInitialX + _bodyWidth + _contactWidth;
             rightLine.Y2 = _bodyInitialY + ((double)_bodyHeight / 2);
             LogicBlock.Add(rightLine);
-            canvas.Children.Add(rightLine);
+            _canvas.Children.Add(rightLine);
             _negativeOutputCircle = null;
         }
 
-        public void AddOutputSnap(Canvas canvas)
+        public void AddOutputSnap()
         {
             Ellipse rightInputSnap = Figures.AddInputSnapCircle(SnapCircleDiameter);
             Canvas.SetLeft(rightInputSnap, _bodyInitialX + _bodyWidth);
             Canvas.SetTop(rightInputSnap, _bodyInitialY + (double)(_bodyHeight / 2) -
                 (double)(SnapCircleDiameter / 2));
             LogicBlock?.Add(rightInputSnap);
-            canvas.Children.Add(rightInputSnap);
+            _canvas.Children.Add(rightInputSnap);
             this.OutputSnap = rightInputSnap;
         }
 
-        public void AddInputsSnap(Canvas canvas)
+        public void AddInputsSnap()
         {
             for(int i = 0; i < _inputsNumber; i++)
             {
@@ -86,7 +94,7 @@ namespace AdaptiveCourseClient.RenderObjects
                 Canvas.SetTop(leftInputSnap, _bodyInitialY + _bodyHeight * ((double)(i + 1) / (_inputsNumber + 1)) - 
                     (double)(SnapCircleDiameter / 2));
                 LogicBlock.Add(leftInputSnap);
-                canvas.Children.Add(leftInputSnap);
+                _canvas.Children.Add(leftInputSnap);
                 this.InputsSnap.Add(leftInputSnap);
             }
         }
@@ -134,7 +142,7 @@ namespace AdaptiveCourseClient.RenderObjects
             }
         }
 
-        public void MoveLogicBlock(MouseButtonEventHandler LogicElementAND_PreviewMouseLeftButtonDown,
+        public void MoveLogicBlockEvents(MouseButtonEventHandler LogicElementAND_PreviewMouseLeftButtonDown,
             MouseEventHandler LogicElement_PreviewMouseMove, MouseButtonEventHandler LogicElement_PreviewMouseLeftButtonUp)
         {
             _body.PreviewMouseLeftButtonDown += LogicElementAND_PreviewMouseLeftButtonDown;
@@ -160,6 +168,44 @@ namespace AdaptiveCourseClient.RenderObjects
             LogicBlock?.Add(circle);
             _negativeOutputCircle = circle;
             _canvas?.Children.Add(circle);
+            foreach (UIElement uIElement in LogicBlock)
+            {
+                Panel.SetZIndex(uIElement, 0);
+            }
+        }
+
+        public void MoveLogicElement(Point cursorPosition, Point _logicElementOffset, List<ConnectionLine> connectionLines)
+        {
+            double bodyX = Canvas.GetLeft(LogicBlock[0]);
+            double bodyY = Canvas.GetTop(LogicBlock[0]);
+            foreach (UIElement uIElement in LogicBlock)
+            {
+                double Y = cursorPosition.Y - _logicElementOffset.Y - bodyY;
+                double X = cursorPosition.X - _logicElementOffset.X - bodyX;
+                if (uIElement is Line)
+                {
+                    Line contact = (Line)uIElement;
+                    double contactX = contact.X1;
+                    double contactY = contact.Y1;
+                    Y += contactY;
+                    X += contactX;
+                    foreach (ConnectionLine connectionLine in connectionLines)
+                        connectionLine.MoveConnectionLine(contact, X, Y);
+                    contact.X1 = X;
+                    contact.Y1 = Y;
+                    contact.X2 = X + LogicElement.OutputCircleDiameter / 2;
+                    contact.Y2 = Y;
+                }
+                else
+                {
+                    double positionX = Canvas.GetLeft(uIElement);
+                    double positionY = Canvas.GetTop(uIElement);
+                    Y += positionY;
+                    X += positionX;
+                    Canvas.SetTop(uIElement, Y);
+                    Canvas.SetLeft(uIElement, X);
+                }
+            }
         }
     }
 }

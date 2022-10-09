@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 
-namespace AdaptiveCourseClient.RenderObjects
+namespace AdaptiveCourseClient.Infrastructure
 {
     public class UIElementGroup : IEnumerable
     {
@@ -10,7 +10,7 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public UIElementGroup()
         {
-            this.uIElements = new List<UIElement>();
+            uIElements = new List<UIElement>();
         }
 
         public UIElementGroup(List<UIElement> uIElements)
@@ -20,39 +20,39 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void Add(UIElement uIElement)
         {
-            this.uIElements.Add(uIElement);
+            uIElements.Add(uIElement);
         }
 
         public void Remove(UIElement uIElement)
         {
-            if (this.uIElements.Contains(uIElement))
-                this.uIElements.Remove(uIElement);
+            if (uIElements.Contains(uIElement))
+                uIElements.Remove(uIElement);
         }
 
         public void Replace(UIElement uIElementRemove, UIElement uIElementAdd)
         {
-            if (this.uIElements.Contains(uIElementRemove))
+            if (uIElements.Contains(uIElementRemove))
             {
-                int index = this.uIElements.IndexOf(uIElementRemove);
-                this.uIElements.Remove(uIElementRemove);
-                this.uIElements.Insert(index, uIElementAdd);
+                int index = uIElements.IndexOf(uIElementRemove);
+                uIElements.Remove(uIElementRemove);
+                uIElements.Insert(index, uIElementAdd);
             }
         }
 
         public bool Contains(UIElement uIElement)
         {
-            if (this.uIElements.Contains(uIElement))
+            if (uIElements.Contains(uIElement))
                 return true;
-            else 
+            else
                 return false;
         }
 
-        public IEnumerator GetEnumerator() => this.uIElements.GetEnumerator();
+        public IEnumerator GetEnumerator() => uIElements.GetEnumerator();
 
         public UIElement this[int index]
         {
-            get { return this.uIElements[index]; }
-            set { this.uIElements[index] = value; }
+            get { return uIElements[index]; }
+            set { uIElements[index] = value; }
         }
     }
 }

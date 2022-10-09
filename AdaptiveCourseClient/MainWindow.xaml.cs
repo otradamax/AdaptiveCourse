@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -6,22 +7,45 @@ using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using AdaptiveCourseClient.Infrastructure;
 using AdaptiveCourseClient.RenderObjects;
 
 namespace AdaptiveCourseClient
 {
     public partial class MainWindow : Window
     {
-        private UIElement? _currentElement;
-        private UIElementGroup? logicElement;
-        private Shape coloredElement;
-        private Point logicElementOffset;
-        private List<LogicElement> logicElements;
+        public UIElement? SelectedLogicElement { get; set; }
+        public ConnectionLine SelectedLine { get; set; }
+        public bool IsSelected 
+        { 
+            get { return _isSelected; } 
+            set 
+            {
+                _isSelected = value; 
+                if (value == true) _isStepEnds = false; 
+            } 
+        }
+        private bool IsConnectionLineBuilding 
+        { 
+            get { return _isConnectionLineBuilding; }
+            set 
+            {
+                _isConnectionLineBuilding = value;
+                if (value == true) _isStepEnds = false; 
+            }
+        }
+
+        private LogicElement? _logicElement;
+        private Shape _beginningContact;
+        private Point _logicElementOffset;
+        private List<LogicElement> _logicElements;
         private UIElementGroup _inputs;
         private UIElement _output;
-        private UIElementGroup ConnectionLines;
+        private List<ConnectionLine> connectionLines;
 
-        private bool isConnectionLineBuilding = false;
+        private bool _isConnectionLineBuilding = false;
+        private bool _isStepEnds = true;
+        private bool _isSelected = false;
 
         private static readonly int _logicElementNum = 3;
         private static readonly int _inputsNum = 4;
@@ -32,11 +56,11 @@ namespace AdaptiveCourseClient
             InitializeComponent();
 
             Loaded += MainWindow_Loaded;
-            bodyCanvas.PreviewMouseLeftButtonDown += Canvas_PreviewMouseLeftButtonDown;
+            bodyCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
 
-            logicElements = new List<LogicElement>();
+            _logicElements = new List<LogicElement>();
             _inputs = new UIElementGroup();
-            ConnectionLines = new UIElementGroup();
+            connectionLines = new List<ConnectionLine>();
 
             CreateBlocks();
         }
@@ -64,9 +88,9 @@ namespace AdaptiveCourseClient
                     this.Height * ((double)(i + 1) / (_inputsNum + 1))));
 
                 input.Points = inputPoints;
-                input.MouseMove += LeftInput_MouseMove;
-                input.MouseLeave += LeftInput_MouseLeave;
-                input.PreviewMouseLeftButtonDown += Input_PreviewMouseLeftButtonDown;
+                input.MouseMove += Input_MouseMove;
+                input.MouseLeave += Input_MouseLeave;
+                input.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
 
                 bodyCanvas.Children.Add(input);
                 _inputs.Add(input);
@@ -97,137 +121,151 @@ namespace AdaptiveCourseClient
         {
             for (int i = 0; i < _logicElementNum; i++)
             {
-                LogicElement element = new LogicElement();
-                logicElements.Add(element);
-                element.AddBlock(bodyCanvas);
-                element.AddOutputSnap(bodyCanvas);
-                element.OutputSnap.PreviewMouseLeftButtonDown += Input_PreviewMouseLeftButtonDown;
-                element.AddInputsSnap(bodyCanvas);
-                element.MoveLogicBlock(LogicElementAND_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
+                LogicElement element = new LogicElement(bodyCanvas);
+                _logicElements.Add(element);
+                element.AddBlock();
+                element.AddOutputSnap();
+                element.OutputSnap.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
+                element.AddInputsSnap();
+                element.MoveLogicBlockEvents(LogicElementAND_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
                 element.AddOutputSnapColoringEvent();
             }
         }
 
-        private void Input_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void BeginningContact_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!isConnectionLineBuilding)
+            if (!IsConnectionLineBuilding)
             {
-                isConnectionLineBuilding = true;
-                coloredElement = (Shape)sender;
-                    coloredElement.Stroke = Brushes.DarkGreen;
-                    ColorAllEndingContacts(true);
-                    RemoveEventsForRightInputs();
-                    AddEventsForLeftInputs();
+                IsConnectionLineBuilding = true;
+                _beginningContact = (Shape)sender;
+                _beginningContact.Stroke = Brushes.DarkGreen;
+                ColorAllEndingContacts(true);
+                RemoveEventsForBeginningContacts();
+                AddEventsForEndingContacts();
             }
         }
 
-        private void Canvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (isConnectionLineBuilding)
+            if (_isStepEnds)
             {
-                isConnectionLineBuilding = false;
-                    if (coloredElement is Ellipse)
-                        coloredElement.Stroke = Brushes.Transparent;
-                    else if (coloredElement is Polygon)
-                        coloredElement.Stroke = Brushes.Black;
+                if (IsConnectionLineBuilding)
+                {
+                    IsConnectionLineBuilding = false;
+                    if (_beginningContact is Ellipse)
+                        _beginningContact.Stroke = Brushes.Transparent;
+                    else if (_beginningContact is Polygon)
+                        _beginningContact.Stroke = Brushes.Black;
                     ColorAllEndingContacts(false);
-                    RemoveEventsForLeftInputs();
-                    AddEventsForRightInputs();
+                    RemoveEventsForEndingContacts();
+                    AddEventsForBeginningContacts();
+                }
+                if (IsSelected)
+                {
+                    SelectedLine.SetColor(Brushes.Black);
+                    IsSelected = false;
+                    SelectedLine = null;
+                }
+            }
+            else
+            {
+                _isStepEnds = true;
             }
         }
 
-        private void BodyCanvas_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void Canvas_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
             {
-                if (ConnectionLines.Contains(_currentElement))
+                if (connectionLines.Contains(SelectedLine))
                 {
-                    ConnectionLines.Remove(_currentElement);
-                    bodyCanvas.Children.Remove(_currentElement);
-                    _currentElement = null;
+                    connectionLines.Remove(SelectedLine);
+                    bodyCanvas.Children.Remove(SelectedLine.Polyline);
+                    IsSelected = false;
+                    SelectedLine = null;
                 }
             }
         }
 
         private void ColorAllEndingContacts(bool isSelected)
         {
-            foreach(LogicElement elementAND in logicElements)
+            foreach(LogicElement elementAND in _logicElements)
             {
-                foreach(UIElement leftInput in elementAND.InputsSnap)
+                foreach(UIElement input in elementAND.InputsSnap)
                 {
-                    Shape leftInputAround = (Ellipse)leftInput;
-                    leftInputAround.Stroke = isSelected ? Brushes.Red : Brushes.Transparent;
+                    Shape inputSnap = (Ellipse)input;
+                    inputSnap.Stroke = isSelected ? Brushes.Red : Brushes.Transparent;
                 }
             }
-            Shape rightInputAround = (Polygon)_output;
-            rightInputAround.Stroke = isSelected ? Brushes.Red : Brushes.Black;
+            Shape outnputSnap = (Polygon)_output;
+            outnputSnap.Stroke = isSelected ? Brushes.Red : Brushes.Black;
         }
 
-        private void AddEventsForRightInputs()
+        private void AddEventsForBeginningContacts()
         {
             foreach (UIElement uIElement in _inputs)
             {
-                uIElement.MouseMove += LeftInput_MouseMove;
-                uIElement.MouseLeave += LeftInput_MouseLeave;
+                uIElement.MouseMove += Input_MouseMove;
+                uIElement.MouseLeave += Input_MouseLeave;
             }
-            foreach (LogicElement uIElement in logicElements)
+            foreach (LogicElement uIElement in _logicElements)
             {
                 uIElement.AddOutputSnapColoringEvent();
             }
         }
 
-        private void RemoveEventsForRightInputs()
+        private void RemoveEventsForBeginningContacts()
         {
             foreach (UIElement uIElement in _inputs)
             {
-                uIElement.MouseMove -= LeftInput_MouseMove;
-                uIElement.MouseLeave -= LeftInput_MouseLeave;
+                uIElement.MouseMove -= Input_MouseMove;
+                uIElement.MouseLeave -= Input_MouseLeave;
             }
-            foreach (LogicElement uIElement in logicElements)
+            foreach (LogicElement uIElement in _logicElements)
             {
                 uIElement.RemoveOutputSnapColoringEvent();
             }
         }
 
-        private void AddEventsForLeftInputs()
+        private void AddEventsForEndingContacts()
         {
-            _output.MouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
-            foreach (LogicElement uIElement in logicElements)
+            _output.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
+            foreach (LogicElement uIElement in _logicElements)
             {
-                foreach(UIElement leftInputAround in uIElement.InputsSnap)
+                foreach(UIElement outputSnap in uIElement.InputsSnap)
                 {
-                    leftInputAround.MouseLeftButtonUp += LeftInput_PreviewMouseLeftButtonUp;
+                    outputSnap.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
                 }
             }
         }
 
-        private void RemoveEventsForLeftInputs()
+        private void RemoveEventsForEndingContacts()
         {
-            _output.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
-            foreach (LogicElement uIElement in logicElements)
+            _output.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
+            foreach (LogicElement uIElement in _logicElements)
             {
-                foreach (UIElement leftInputAround in uIElement.InputsSnap)
+                foreach (UIElement outputSnap in uIElement.InputsSnap)
                 {
-                    leftInputAround.PreviewMouseLeftButtonUp -= LeftInput_PreviewMouseLeftButtonUp;
+                    outputSnap.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
                 }
             }
         }
 
-        private void LeftInput_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void EndingContact_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             Point firstPoint = new Point();
             Point lastPoint = new Point();
 
-            if (coloredElement is Polygon)
+            if (_beginningContact is Polygon)
             {
-                Polygon polygon = (Polygon)coloredElement;
+                Polygon polygon = (Polygon)_beginningContact;
                 firstPoint = polygon.Points.Last();
             }
-            else if(coloredElement is Ellipse)
+            else if(_beginningContact is Ellipse)
             {
-                firstPoint = new Point(Canvas.GetLeft(coloredElement) + LogicElement.SnapCircleDiameter / 2,
-                    Canvas.GetTop(coloredElement) + LogicElement.SnapCircleDiameter / 2);
+                firstPoint = new Point(Canvas.GetLeft(_beginningContact) + LogicElement.SnapCircleDiameter / 2,
+                    Canvas.GetTop(_beginningContact) + LogicElement.SnapCircleDiameter / 2);
             }
             
             if (sender is Polygon)
@@ -241,13 +279,13 @@ namespace AdaptiveCourseClient
                     Canvas.GetTop((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2);
             }
 
-            ConnectionLine connectionLine = new ConnectionLine();
-            Polyline connectionLinePoly = connectionLine.AddConnectionLine(bodyCanvas, firstPoint, lastPoint);
+            ConnectionLine connectionLine = new ConnectionLine(this);
+            connectionLine.AddConnectionLine(bodyCanvas, firstPoint, lastPoint);
 
-            ConnectionLines.Add(connectionLinePoly);
+            connectionLines.Add(connectionLine);
         }
 
-        private void LeftInput_MouseLeave(object sender, MouseEventArgs e)
+        private void Input_MouseLeave(object sender, MouseEventArgs e)
         {
             Polygon input = (Polygon)sender;
             if (input != null)
@@ -256,7 +294,7 @@ namespace AdaptiveCourseClient
             }
         }
 
-        private void LeftInput_MouseMove(object sender, MouseEventArgs e)
+        private void Input_MouseMove(object sender, MouseEventArgs e)
         {
             Polygon input = (Polygon)sender;
             if (input != null)
@@ -267,124 +305,46 @@ namespace AdaptiveCourseClient
 
         private void LogicElementAND_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _currentElement = (UIElement)sender;
-            foreach(LogicElement logicBlock in logicElements)
+            SelectedLogicElement = (UIElement)sender;
+            foreach(LogicElement logicBlock in _logicElements)
             {
-                if (logicBlock.LogicBlock.Contains(_currentElement))
+                if (logicBlock.LogicBlock.Contains(SelectedLogicElement))
                 {
-                    logicElement = logicBlock.LogicBlock;
+                    _logicElement = logicBlock;
                 }
             }
-            logicElementOffset = e.GetPosition(bodyCanvas);
-            logicElementOffset.Y -= Canvas.GetTop(_currentElement);
-            logicElementOffset.X -= Canvas.GetLeft(_currentElement);
-            if (logicElement != null)
+            _logicElementOffset = e.GetPosition(bodyCanvas);
+            _logicElementOffset.Y -= Canvas.GetTop(SelectedLogicElement);
+            _logicElementOffset.X -= Canvas.GetLeft(SelectedLogicElement);
+            if (_logicElement != null)
             {
-                foreach (UIElement uIElement in logicElement)
+                foreach (UIElement uIElement in _logicElement.LogicBlock)
                 {
                     Panel.SetZIndex(uIElement, 1);
                 }
             }
-            _currentElement.CaptureMouse();
+            SelectedLogicElement.CaptureMouse();
         }
 
         private void LogicElement_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (logicElement == null)
+            if (_logicElement == null)
                 return;
 
             // Logic element movement
             Point cursorPosition = e.GetPosition(sender as Canvas);
 
-            double positionXMain = Canvas.GetLeft(logicElement[0]);
-            double positionYMain = Canvas.GetTop(logicElement[0]);
-
-            foreach (UIElement uIElement in logicElement)
-            {
-                double Y = cursorPosition.Y - logicElementOffset.Y - positionYMain;
-                double X = cursorPosition.X - logicElementOffset.X - positionXMain;
-                if (uIElement is Line)
-                {
-                    Line line = (Line)uIElement;
-                    double positionX = line.X1;
-                    double positionY = line.Y1;
-                    Y += positionY;
-                    X += positionX;
-                    MoveConnectionLines(line, X, Y);
-                    line.X1 = X;
-                    line.Y1 = Y;
-                    line.X2 = X + LogicElement.OutputCircleDiameter / 2;
-                    line.Y2 = Y;
-                }
-                else
-                {
-                    double positionX = Canvas.GetLeft(uIElement);
-                    double positionY = Canvas.GetTop(uIElement);
-                    Y += positionY;
-                    X += positionX;
-                    Canvas.SetTop(uIElement, Y);
-                    Canvas.SetLeft(uIElement, X);
-                }
-            }
-        }
-
-        private void MoveConnectionLines(Line input, double newX, double newY)
-        {
-            foreach(UIElement line in ConnectionLines)
-            {
-                Polyline connectionLine = (Polyline)line;
-                Point firstConnectionPoint = connectionLine.Points[0];
-                Point lastConnectionPoint = connectionLine.Points.Last();
-                // Left input
-                if ((firstConnectionPoint.X == input.X1) && (firstConnectionPoint.Y == input.Y1))
-                {
-                    connectionLine.Points = MoveConnectionLinePoints(connectionLine.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
-                }
-                else if((lastConnectionPoint.X == input.X1) && (lastConnectionPoint.Y == input.Y1))
-                {
-                    connectionLine.Points = MoveConnectionLinePoints(new PointCollection(connectionLine.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
-                }
-                // Right input
-                else if ((firstConnectionPoint.X == input.X2) && (firstConnectionPoint.Y == input.Y2))
-                {
-                    connectionLine.Points =  MoveConnectionLinePoints(connectionLine.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
-                }
-                else if ((lastConnectionPoint.X == input.X2) && (lastConnectionPoint.Y == input.Y2))
-                {
-                    connectionLine.Points =  MoveConnectionLinePoints(new PointCollection(connectionLine.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
-                    
-                }
-            }
-        }
-
-        private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX)
-        {
-            PointCollection points = new PointCollection();
-            points.Add(new Point(newX, newY));
-            points.Add(new Point(connectionLineX, newY));
-            points.Add(new Point(connectionLineX, connectionLine[2].Y));
-            points.Add(new Point(connectionLine[3].X, connectionLine[3].Y));
-            return points;
+            _logicElement.MoveLogicElement(cursorPosition, _logicElementOffset, connectionLines);
         }
 
         private void LogicElement_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (logicElement == null)
+            if (_logicElement == null)
                 return;
 
-            Point position = e.GetPosition(sender as Canvas);
-            foreach (UIElement uIElement in logicElement)
-            {
-                if (position.X < Toolbox.ActualWidth)
-                {
-                    Canvas.SetTop(uIElement, 50);
-                    Canvas.SetLeft(uIElement, 50);
-                }
-                Panel.SetZIndex(uIElement, 0);
-            }
-            _currentElement?.ReleaseMouseCapture();
-            _currentElement = null;
-            logicElement = null;
+            SelectedLogicElement?.ReleaseMouseCapture();
+            SelectedLogicElement = null;
+            _logicElement = null;
         }
     }
 }
