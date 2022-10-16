@@ -24,12 +24,12 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public static readonly int OutputCircleDiameter = 16;
         public static readonly int SnapCircleDiameter = 16;
+        public static readonly int ContactWidth = 8;
+        public readonly int BodyWidth = 50;
+        public readonly int BodyHeight = 70;
 
-        private static readonly int _bodyWidth = 50;
-        private static readonly int _bodyHeight = 70;
         private static readonly int _bodyInitialX = 50;
         private static readonly int _bodyInitialY = 50;
-        private static readonly int _contactWidth = 8;
         private static readonly int _inputsNumber = 2;
 
         public LogicElement(Canvas canvas)
@@ -43,7 +43,7 @@ namespace AdaptiveCourseClient.RenderObjects
             InputsSnap = new UIElementGroup();
 
             // Main body creation
-            _body = Figures.AddBody(_bodyWidth, _bodyHeight);
+            _body = Figures.AddBody(BodyWidth, BodyHeight);
             _body.PreviewMouseDown += Body_PreviewMouseDown;
             Canvas.SetLeft(_body, _bodyInitialX);
             Canvas.SetTop(_body, _bodyInitialY);
@@ -53,9 +53,9 @@ namespace AdaptiveCourseClient.RenderObjects
             // Inputs creation
             for (int i = 0; i < _inputsNumber; i++)
             {
-                double relativeInputY = _bodyHeight * ((double)(i + 1) / (_inputsNumber + 1));
+                double relativeInputY = BodyHeight * ((double)(i + 1) / (_inputsNumber + 1));
                 Line leftInputLine = Figures.AddContact();
-                leftInputLine.X1 = _bodyInitialX - _contactWidth;
+                leftInputLine.X1 = _bodyInitialX - ContactWidth;
                 leftInputLine.Y1 = _bodyInitialY + (relativeInputY);
                 leftInputLine.X2 = _bodyInitialX;
                 leftInputLine.Y2 = _bodyInitialY + (relativeInputY);
@@ -65,10 +65,10 @@ namespace AdaptiveCourseClient.RenderObjects
 
             // Output creation
             Line rightLine = Figures.AddContact();
-            rightLine.X1 = _bodyInitialX + _bodyWidth;
-            rightLine.Y1 = _bodyInitialY + ((double)_bodyHeight / 2);
-            rightLine.X2 = _bodyInitialX + _bodyWidth + _contactWidth;
-            rightLine.Y2 = _bodyInitialY + ((double)_bodyHeight / 2);
+            rightLine.X1 = _bodyInitialX + BodyWidth;
+            rightLine.Y1 = _bodyInitialY + ((double)BodyHeight / 2);
+            rightLine.X2 = _bodyInitialX + BodyWidth + ContactWidth;
+            rightLine.Y2 = _bodyInitialY + ((double)BodyHeight / 2);
             LogicBlock.Add(rightLine);
             _canvas.Children.Add(rightLine);
             _negativeOutputCircle = null;
@@ -89,8 +89,8 @@ namespace AdaptiveCourseClient.RenderObjects
         public void AddOutputSnap()
         {
             Ellipse rightInputSnap = Figures.AddInputSnapCircle(SnapCircleDiameter);
-            Canvas.SetLeft(rightInputSnap, _bodyInitialX + _bodyWidth);
-            Canvas.SetTop(rightInputSnap, _bodyInitialY + (double)(_bodyHeight / 2) -
+            Canvas.SetLeft(rightInputSnap, _bodyInitialX + BodyWidth);
+            Canvas.SetTop(rightInputSnap, _bodyInitialY + (double)(BodyHeight / 2) -
                 (double)(SnapCircleDiameter / 2));
             LogicBlock?.Add(rightInputSnap);
             _canvas.Children.Add(rightInputSnap);
@@ -103,7 +103,7 @@ namespace AdaptiveCourseClient.RenderObjects
             {
                 Ellipse leftInputSnap = Figures.AddInputSnapCircle(SnapCircleDiameter);
                 Canvas.SetLeft(leftInputSnap, _bodyInitialX - SnapCircleDiameter);
-                Canvas.SetTop(leftInputSnap, _bodyInitialY + _bodyHeight * ((double)(i + 1) / (_inputsNumber + 1)) - 
+                Canvas.SetTop(leftInputSnap, _bodyInitialY + BodyHeight * ((double)(i + 1) / (_inputsNumber + 1)) - 
                     (double)(SnapCircleDiameter / 2));
                 LogicBlock.Add(leftInputSnap);
                 _canvas.Children.Add(leftInputSnap);
@@ -171,8 +171,8 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private void AddNegativeOutput()
         {
-            double outputX = Canvas.GetLeft(_body) + _bodyWidth;
-            double outputY = Canvas.GetTop(_body) + ((double)_bodyHeight / 2);
+            double outputX = Canvas.GetLeft(_body) + BodyWidth;
+            double outputY = Canvas.GetTop(_body) + ((double)BodyHeight / 2);
             Ellipse circle = Figures.AddOutputCircle(OutputCircleDiameter);
             Canvas.SetTop(circle, outputY - OutputCircleDiameter / 2);
             Canvas.SetLeft(circle, outputX - OutputCircleDiameter * 2 / 3);

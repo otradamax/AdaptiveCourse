@@ -19,21 +19,46 @@ namespace AdaptiveCourseClient.RenderObjects
         private Canvas _canvas;
         public Polyline ConnectionLinePolyline { get; set; }
 
+        private double _blockOffset = 10;
+
         public ConnectionLine(MainWindow window, Canvas canvas)
         {
             _window = window;
             _canvas = canvas;
         }
 
-        public void AddConnectionLine(Point firstPoint, Point lastPoint)
+        public void AddConnectionLine(Point firstPoint, LogicElement firstElement, Point lastPoint, LogicElement lastElement)
         {
             Polyline connectionLine = Figures.AddConnectionLine();
 
             PointCollection points = new PointCollection();
-            double fractureX = (firstPoint.X + lastPoint.X) / 2;
             points.Add(firstPoint);
-            points.Add(new Point(fractureX, firstPoint.Y));
-            points.Add(new Point(fractureX, lastPoint.Y));
+
+            // FeedBack
+            if (firstElement == lastElement && firstElement != null)
+            {
+                double logicBlockTopY = Canvas.GetTop(firstElement.LogicBlock[0]);
+                double fractureY = lastPoint.Y < firstPoint.Y ? logicBlockTopY - _blockOffset : logicBlockTopY + firstElement.BodyHeight + _blockOffset;
+                points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, firstPoint.Y));
+                points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, fractureY));
+                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, fractureY));
+                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, lastPoint.Y));
+            }
+            // Output is more left than input
+            else if (lastPoint.X - firstPoint.X < 2 * LogicElement.ContactWidth)
+            {
+                double fractureY = (firstPoint.Y + lastPoint.Y) / 2;
+                points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, firstPoint.Y));
+                points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, fractureY));
+                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, fractureY));
+                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, lastPoint.Y));
+            }
+            else
+            {
+                double fractureX = (firstPoint.X + lastPoint.X) / 2;
+                points.Add(new Point(fractureX, firstPoint.Y));
+                points.Add(new Point(fractureX, lastPoint.Y));
+            }
             points.Add(lastPoint);
 
             connectionLine.Points = points;
@@ -64,8 +89,10 @@ namespace AdaptiveCourseClient.RenderObjects
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 Point connectionLineCoord = e.GetPosition(_canvas);
-                if (connectionLineCoord.Y > ConnectionLinePolyline.Points[0].Y 
-                    && connectionLineCoord.Y < ConnectionLinePolyline.Points.Last().Y)
+                if ((connectionLineCoord.Y > ConnectionLinePolyline.Points[0].Y 
+                    && connectionLineCoord.Y < ConnectionLinePolyline.Points.Last().Y) ||
+                    (connectionLineCoord.Y < ConnectionLinePolyline.Points[0].Y
+                    && connectionLineCoord.Y > ConnectionLinePolyline.Points.Last().Y))
                 {
                     Point cursorPosition = e.GetPosition(sender as Canvas);
                     ConnectionLinePolyline.Points[1] = new Point(cursorPosition.X, ConnectionLinePolyline.Points[1].Y);
@@ -101,29 +128,45 @@ namespace AdaptiveCourseClient.RenderObjects
             // Connection line direction determination
             if (Math.Abs(firstConnectionPoint.X - input.X1) < precision && Math.Abs(firstConnectionPoint.Y - input.Y1) < precision)
             {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, 
+                    newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
             }
             else if (Math.Abs(lastConnectionPoint.X - input.X1) < precision && Math.Abs(lastConnectionPoint.Y - input.Y1) < precision)
             {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
+                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2);
             }
             else if (Math.Abs(firstConnectionPoint.X - input.X2) < precision && Math.Abs(firstConnectionPoint.Y - input.Y2) < precision)
             {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, newX, newY, (lastConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, 
+                    newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
             }
             else if (Math.Abs(lastConnectionPoint.X - input.X2) < precision && Math.Abs(lastConnectionPoint.Y - input.Y2) < precision)
             {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), newX, newY, (firstConnectionPoint.X + newX) / 2);
+                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
+                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2);
             }
         }
 
-        private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX)
+        private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX, double connectionLineY)
         {
             PointCollection points = new PointCollection();
-            points.Add(new Point(newX, newY));
-            points.Add(new Point(connectionLineX, newY));
-            points.Add(new Point(connectionLineX, connectionLine[2].Y));
-            points.Add(new Point(connectionLine[3].X, connectionLine[3].Y));
+            if (connectionLine.Count == 4)
+            {
+                points.Add(new Point(newX, newY));
+                points.Add(new Point(connectionLineX, newY));
+                points.Add(new Point(connectionLineX, connectionLine[2].Y));
+                points.Add(new Point(connectionLine[3].X, connectionLine[3].Y));
+            }
+            else if (connectionLine.Count == 6)
+            {
+                points.Add(new Point(newX, newY));
+                points.Add(new Point(newX + 2 * LogicElement.ContactWidth, newY));
+                points.Add(new Point(newX + 2 * LogicElement.ContactWidth, connectionLineY));
+                points.Add(new Point(connectionLine[3].X, connectionLineY));
+                points.Add(new Point(connectionLine[4].X, connectionLine[4].Y));
+                points.Add(new Point(connectionLine[5].X, connectionLine[5].Y));
+            }
             return points;
         }
     }

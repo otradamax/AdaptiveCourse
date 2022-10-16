@@ -258,6 +258,8 @@ namespace AdaptiveCourseClient
         {
             Point firstPoint = new Point();
             Point lastPoint = new Point();
+            LogicElement firstElement = null;
+            LogicElement secondElement = null;
 
             // Connection line first and last points determination
             if (_beginningContact is Polygon)
@@ -269,6 +271,16 @@ namespace AdaptiveCourseClient
             {
                 firstPoint = new Point(Canvas.GetLeft(_beginningContact) + LogicElement.SnapCircleDiameter / 2,
                     Canvas.GetTop(_beginningContact) + LogicElement.SnapCircleDiameter / 2);
+
+                // Block belonging determination
+                foreach(LogicElement logicElement in _logicElements)
+                {
+                    if (logicElement.LogicBlock.Contains(_beginningContact))
+                    {
+                        firstElement = logicElement;
+                        break;
+                    }
+                }
             }
             
             if (sender is Polygon)
@@ -280,10 +292,20 @@ namespace AdaptiveCourseClient
             {
                 lastPoint = new Point(Canvas.GetLeft((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2,
                     Canvas.GetTop((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2);
+
+                // Block belonging determination
+                foreach (LogicElement logicElement in _logicElements)
+                {
+                    if (logicElement.LogicBlock.Contains((Ellipse)sender))
+                    {
+                        secondElement = logicElement;
+                        break;
+                    }
+                }
             }
 
             ConnectionLine connectionLine = new ConnectionLine(this, bodyCanvas);
-            connectionLine.AddConnectionLine(firstPoint, lastPoint);
+            connectionLine.AddConnectionLine(firstPoint, firstElement, lastPoint, secondElement);
 
             connectionLines.Add(connectionLine);
         }
