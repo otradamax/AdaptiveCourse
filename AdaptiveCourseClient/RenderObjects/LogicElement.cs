@@ -12,7 +12,7 @@ using AdaptiveCourseClient.Infrastructure;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
-    public class LogicElement
+    public class LogicElement : Element
     {
         public UIElementGroup? LogicBlock { get; set; }
         public Ellipse? OutputSnap { get; set; }
@@ -20,7 +20,6 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private Rectangle? _body;
         private Shape? _negativeOutputCircle;
-        private Canvas? _canvas;
 
         public static readonly int OutputCircleDiameter = 16;
         public static readonly int SnapCircleDiameter = 16;
@@ -32,7 +31,7 @@ namespace AdaptiveCourseClient.RenderObjects
         private static readonly int _bodyInitialY = 50;
         private static readonly int _inputsNumber = 2;
 
-        public LogicElement(Canvas canvas)
+        public LogicElement(Canvas canvas) : base(canvas)
         {
             _canvas = canvas;
         }

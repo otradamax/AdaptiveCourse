@@ -39,8 +39,8 @@ namespace AdaptiveCourseClient
         private Shape _beginningContact;
         private Point _logicElementOffset;
         private List<LogicElement> _logicElements;
-        private UIElementGroup _inputs;
-        private UIElement _output;
+        private List<InputElement> _inputs;
+        private OutputElement _output;
         private List<ConnectionLine> connectionLines;
 
         private bool _isConnectionLineBuilding = false;
@@ -59,7 +59,7 @@ namespace AdaptiveCourseClient
             bodyCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
 
             _logicElements = new List<LogicElement>();
-            _inputs = new UIElementGroup();
+            _inputs = new List<InputElement>();
             connectionLines = new List<ConnectionLine>();
 
             CreateBlocks();
@@ -75,49 +75,18 @@ namespace AdaptiveCourseClient
         {
             for (int i = 0; i < _inputsNum; i++)
             {
-                Polygon input = new Polygon();
-                input.Fill = Brushes.White;
-                input.Stroke = Brushes.Black;
-                input.StrokeThickness = 3;
-
-                // Creating a triangle input
-                PointCollection inputPoints = new PointCollection();
-                inputPoints.Add(new Point(Toolbox.ActualWidth,
-                    this.Height * ((double)(i + 1) / (_inputsNum + 1)) - _inputWidth));
-                inputPoints.Add(new Point(Toolbox.ActualWidth,
-                    this.Height * ((double)(i + 1) / (_inputsNum + 1)) + _inputWidth));
-                inputPoints.Add(new Point(Toolbox.ActualWidth + 40,
-                    this.Height * ((double)(i + 1) / (_inputsNum + 1))));
-
-                input.Points = inputPoints;
-                input.MouseMove += Input_MouseMove;
-                input.MouseLeave += Input_MouseLeave;
-                input.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
-
-                bodyCanvas.Children.Add(input);
+                InputElement input = new InputElement(bodyCanvas, Toolbox.ActualWidth, this.Height);
+                input.AddInput(i, _inputsNum);
+                input.Input.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
             }
         }
 
         private void CreateOutput()
         {
-            Polygon output = new Polygon();
-            output.Fill = Brushes.White;
-            output.Stroke = Brushes.Black;
-            output.StrokeThickness = 3;
-
-            // Creating a triangle output
-            PointCollection outputPoints = new PointCollection();
-            outputPoints.Add(new Point(bodyCanvas.ActualWidth,
-                this.Height / 2 - _inputWidth));
-            outputPoints.Add(new Point(bodyCanvas.ActualWidth,
-                this.Height / 2 + _inputWidth));
-            outputPoints.Add(new Point(bodyCanvas.ActualWidth - 40,
-                this.Height / 2));
-
-            output.Points = outputPoints;
+            OutputElement output = new OutputElement(bodyCanvas, Toolbox.ActualWidth, this.Height);
+            output.AddOutput();
             _output = output;
-            bodyCanvas.Children.Add(output);
         }
 
         private void CreateBlocks()
@@ -200,16 +169,15 @@ namespace AdaptiveCourseClient
                     inputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Transparent;
                 }
             }
-            Shape outnputSnap = (Polygon)_output;
+            Shape outnputSnap = (Polygon)_output.Output;
             outnputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Black;
         }
 
         private void AddEventsForBeginningContacts()
         {
-            foreach (UIElement uIElement in _inputs)
+            foreach (InputElement input in _inputs)
             {
-                uIElement.MouseMove += Input_MouseMove;
-                uIElement.MouseLeave += Input_MouseLeave;
+                input.AddColoringEvent();
             }
             foreach (LogicElement uIElement in _logicElements)
             {
@@ -219,10 +187,9 @@ namespace AdaptiveCourseClient
 
         private void RemoveEventsForBeginningContacts()
         {
-            foreach (UIElement uIElement in _inputs)
+            foreach (InputElement input in _inputs)
             {
-                uIElement.MouseMove -= Input_MouseMove;
-                uIElement.MouseLeave -= Input_MouseLeave;
+                input.RemoveColoringEvent();
             }
             foreach (LogicElement uIElement in _logicElements)
             {
@@ -232,7 +199,7 @@ namespace AdaptiveCourseClient
 
         private void AddEventsForEndingContacts()
         {
-            _output.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
+            _output.Output.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
             foreach (LogicElement uIElement in _logicElements)
             {
                 foreach(UIElement outputSnap in uIElement.InputsSnap)
@@ -244,7 +211,7 @@ namespace AdaptiveCourseClient
 
         private void RemoveEventsForEndingContacts()
         {
-            _output.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
+            _output.Output.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
             foreach (LogicElement uIElement in _logicElements)
             {
                 foreach (UIElement outputSnap in uIElement.InputsSnap)
