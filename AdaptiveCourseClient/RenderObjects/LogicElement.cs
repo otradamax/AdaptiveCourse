@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Xml.Linq;
 using AdaptiveCourseClient.Infrastructure;
 
 namespace AdaptiveCourseClient.RenderObjects
@@ -189,6 +185,40 @@ namespace AdaptiveCourseClient.RenderObjects
         public override void MakeConnection(ConnectionLine connectionLine)
         {
             _connectionLines.Add(connectionLine);
+        }
+
+        public override void FindIntersections(ConnectionLine connectionLine)
+        {
+            if (connectionLine.BeginElement == this)
+            {
+                foreach (ConnectionLine _connectionLine in _connectionLines)
+                {
+                    if (_connectionLine.BeginElement == this)
+                    {
+                        Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine);
+                        if (intersectPoint.X != 0 && intersectPoint.Y != 0)
+                        {
+                            Node node = new Node(_canvas);
+                            node.AddNode(intersectPoint);
+                        }
+                    }
+                }
+            }
+            else if (connectionLine.EndElement == this)
+            {
+                foreach (ConnectionLine _connectionLine in _connectionLines)
+                {
+                    if (_connectionLine.EndElement == this)
+                    {
+                        Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine);
+                        if (intersectPoint.X != 0 && intersectPoint.Y != 0)
+                        {
+                            Node node = new Node(_canvas);
+                            node.AddNode(intersectPoint);
+                        }
+                    }
+                }
+            }
         }
 
         public void MoveLogicElement(Point cursorPosition, Point _logicElementOffset)

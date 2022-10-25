@@ -1,10 +1,6 @@
 ﻿using AdaptiveCourseClient.Infrastructure;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,9 +12,8 @@ namespace AdaptiveCourseClient.RenderObjects
     public class ConnectionLine
     {
         public Polyline ConnectionLinePolyline { get; set; }
-
-        private Element BeginElement { get; set; }
-        private Element EndElement { get; set; }
+        public Element BeginElement { get; set; }
+        public Element EndElement { get; set; }
 
         private MainWindow _window;
         private Canvas _canvas;
@@ -31,11 +26,6 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void AddConnectionLine(Point firstPoint, Point lastPoint, Element firstElement, Element lastElement)
         {
-            firstElement.MakeConnection(this);
-            BeginElement = firstElement;
-            lastElement.MakeConnection(this);
-            EndElement = lastElement;
-
             Polyline connectionLine = Figures.AddConnectionLine();
 
             PointCollection points = new PointCollection();
@@ -66,6 +56,13 @@ namespace AdaptiveCourseClient.RenderObjects
 
             _canvas.Children.Add(connectionLine);
             ConnectionLinePolyline = connectionLine;
+
+            firstElement.MakeConnection(this);
+            BeginElement = firstElement;
+            firstElement.FindIntersections(this);
+            lastElement.MakeConnection(this);
+            EndElement = lastElement;
+            lastElement.FindIntersections(this);
         }
 
         public void SetColor(Brush color) => ConnectionLinePolyline.Stroke = color;
@@ -130,8 +127,8 @@ namespace AdaptiveCourseClient.RenderObjects
             }
             else if (Math.Abs(lastConnectionPoint.X - input.X1) < precision && Math.Abs(lastConnectionPoint.Y - input.Y1) < precision)
             {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
-                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2);
+                ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
+                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
             }
             else if (Math.Abs(firstConnectionPoint.X - input.X2) < precision && Math.Abs(firstConnectionPoint.Y - input.Y2) < precision)
             {
@@ -140,8 +137,8 @@ namespace AdaptiveCourseClient.RenderObjects
             }
             else if (Math.Abs(lastConnectionPoint.X - input.X2) < precision && Math.Abs(lastConnectionPoint.Y - input.Y2) < precision)
             {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
-                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2);
+                ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
+                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
             }
         }
 

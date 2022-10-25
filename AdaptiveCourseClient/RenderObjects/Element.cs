@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
@@ -17,5 +12,7 @@ namespace AdaptiveCourseClient.RenderObjects
         }
 
         public abstract void MakeConnection(ConnectionLine connectionLine);
+
+        public abstract void FindIntersections(ConnectionLine connectionLine);
     }
 }
