@@ -20,6 +20,7 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private Rectangle? _body;
         private Shape? _negativeOutputCircle;
+        private List<ConnectionLine> _connectionLines = new List<ConnectionLine>();
 
         public static readonly int OutputCircleDiameter = 16;
         public static readonly int SnapCircleDiameter = 16;
@@ -185,7 +186,12 @@ namespace AdaptiveCourseClient.RenderObjects
             }
         }
 
-        public void MoveLogicElement(Point cursorPosition, Point _logicElementOffset, List<ConnectionLine> connectionLines)
+        public override void MakeConnection(ConnectionLine connectionLine)
+        {
+            _connectionLines.Add(connectionLine);
+        }
+
+        public void MoveLogicElement(Point cursorPosition, Point _logicElementOffset)
         {
             double bodyX = Canvas.GetLeft(LogicBlock[0]);
             double bodyY = Canvas.GetTop(LogicBlock[0]);
@@ -202,7 +208,7 @@ namespace AdaptiveCourseClient.RenderObjects
                     double contactY = contact.Y1;
                     Y += contactY;
                     X += contactX;
-                    foreach (ConnectionLine connectionLine in connectionLines)
+                    foreach (ConnectionLine connectionLine in _connectionLines)
                         connectionLine.MoveConnectionLine(contact, X, Y);
                     contact.X1 = X;
                     contact.Y1 = Y;

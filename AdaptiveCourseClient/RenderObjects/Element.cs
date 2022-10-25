@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
-    public class Element
+    public abstract class Element
     {
         protected Canvas? _canvas;
 
@@ -15,5 +15,7 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             _canvas = canvas;
         }
+
+        public abstract void MakeConnection(ConnectionLine connectionLine);
     }
 }

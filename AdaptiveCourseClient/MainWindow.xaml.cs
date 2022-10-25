@@ -49,7 +49,6 @@ namespace AdaptiveCourseClient
 
         private static readonly int _logicElementNum = 3;
         private static readonly int _inputsNum = 4;
-        private static readonly int _inputWidth = 10; 
 
         public MainWindow()
         {
@@ -225,54 +224,50 @@ namespace AdaptiveCourseClient
         {
             Point firstPoint = new Point();
             Point lastPoint = new Point();
-            LogicElement firstElement = null;
-            LogicElement secondElement = null;
+            Element firstElement = null;
+            Element lastElement = null;
 
             // Connection line first and last points determination
             if (_beginningContact is Polygon)
             {
                 Polygon polygon = (Polygon)_beginningContact;
+                foreach (InputElement input in _inputs)
+                {
+                    if (input.Input == polygon)
+                        firstElement = input;
+                }
                 firstPoint = polygon.Points.Last();
             }
             else if(_beginningContact is Ellipse)
             {
                 firstPoint = new Point(Canvas.GetLeft(_beginningContact) + LogicElement.SnapCircleDiameter / 2,
                     Canvas.GetTop(_beginningContact) + LogicElement.SnapCircleDiameter / 2);
-
-                // Block belonging determination
-                foreach(LogicElement logicElement in _logicElements)
+                foreach (LogicElement logicElement in _logicElements)
                 {
-                    if (logicElement.LogicBlock.Contains(_beginningContact))
-                    {
+                    if (logicElement.LogicBlock.Contains((Ellipse)_beginningContact))
                         firstElement = logicElement;
-                        break;
-                    }
                 }
             }
             
             if (sender is Polygon)
             {
                 Polygon polygon = (Polygon)sender;
+                lastElement = _output;
                 lastPoint = polygon.Points.Last();
             }
             else if (sender is Ellipse)
             {
                 lastPoint = new Point(Canvas.GetLeft((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2,
                     Canvas.GetTop((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2);
-
-                // Block belonging determination
                 foreach (LogicElement logicElement in _logicElements)
                 {
                     if (logicElement.LogicBlock.Contains((Ellipse)sender))
-                    {
-                        secondElement = logicElement;
-                        break;
-                    }
+                        lastElement = logicElement;
                 }
             }
 
             ConnectionLine connectionLine = new ConnectionLine(this, bodyCanvas);
-            connectionLine.AddConnectionLine(firstPoint, firstElement, lastPoint, secondElement);
+            connectionLine.AddConnectionLine(firstPoint, lastPoint, firstElement, lastElement);
 
             connectionLines.Add(connectionLine);
         }
@@ -330,7 +325,7 @@ namespace AdaptiveCourseClient
             // Logic element movement
             Point cursorPosition = e.GetPosition(sender as Canvas);
 
-            _logicElement.MoveLogicElement(cursorPosition, _logicElementOffset, connectionLines);
+            _logicElement.MoveLogicElement(cursorPosition, _logicElementOffset);
         }
 
         private void LogicElement_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)

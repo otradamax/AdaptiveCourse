@@ -16,6 +16,8 @@ namespace AdaptiveCourseClient.RenderObjects
         public Polygon Input;
         public int Xn;
 
+        private List<ConnectionLine> _connectionLines = new List<ConnectionLine>();
+
         public InputElement(Canvas canvas, double elementInitialX, double elementInitialY) 
             : base(canvas, elementInitialX, elementInitialY) { }
         
@@ -43,6 +45,11 @@ namespace AdaptiveCourseClient.RenderObjects
             Xn = i;
 
             _canvas.Children.Add(Input);
+        }
+
+        public override void MakeConnection(ConnectionLine connectionLine)
+        {
+            _connectionLines.Add(connectionLine);
         }
 
         public void AddColoringEvent()

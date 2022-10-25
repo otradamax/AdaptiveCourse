@@ -17,14 +17,11 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         public Polyline ConnectionLinePolyline { get; set; }
 
-        private LogicElement BeginElement { get; set; }
-        private LogicElement EndElement { get; set; }
+        private Element BeginElement { get; set; }
+        private Element EndElement { get; set; }
 
         private MainWindow _window;
         private Canvas _canvas;
-        
-
-        private double _blockOffset = 10;
 
         public ConnectionLine(MainWindow window, Canvas canvas)
         {
@@ -32,25 +29,20 @@ namespace AdaptiveCourseClient.RenderObjects
             _canvas = canvas;
         }
 
-        public void AddConnectionLine(Point firstPoint, LogicElement firstElement, Point lastPoint, LogicElement lastElement)
+        public void AddConnectionLine(Point firstPoint, Point lastPoint, Element firstElement, Element lastElement)
         {
+            firstElement.MakeConnection(this);
+            BeginElement = firstElement;
+            lastElement.MakeConnection(this);
+            EndElement = lastElement;
+
             Polyline connectionLine = Figures.AddConnectionLine();
 
             PointCollection points = new PointCollection();
             points.Add(firstPoint);
 
-            // FeedBack
-            if (firstElement == lastElement && firstElement != null)
-            {
-                double logicBlockTopY = Canvas.GetTop(firstElement.LogicBlock[0]);
-                double fractureY = lastPoint.Y < firstPoint.Y ? logicBlockTopY - _blockOffset : logicBlockTopY + firstElement.BodyHeight + _blockOffset;
-                points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, firstPoint.Y));
-                points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, fractureY));
-                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, fractureY));
-                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, lastPoint.Y));
-            }
             // Output is more left than input
-            else if (lastPoint.X - firstPoint.X < 2 * LogicElement.ContactWidth)
+            if (lastPoint.X - firstPoint.X < 2 * LogicElement.ContactWidth)
             {
                 double fractureY = (firstPoint.Y + lastPoint.Y) / 2;
                 points.Add(new Point(firstPoint.X + LogicElement.ContactWidth, firstPoint.Y));

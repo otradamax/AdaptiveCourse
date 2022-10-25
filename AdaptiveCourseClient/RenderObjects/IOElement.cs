@@ -43,5 +43,9 @@ namespace AdaptiveCourseClient.RenderObjects
                 input.Stroke = Brushes.Black;
             }
         }
+
+        public override void MakeConnection(ConnectionLine connectionLine)
+        {
+        }
     }
 }

@@ -14,6 +14,8 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         public Polygon Output;
 
+        private List<ConnectionLine> _connectionLines = new List<ConnectionLine>();
+
         public OutputElement(Canvas canvas, double elementInitialX, double elementInitialY)
             : base(canvas, elementInitialX, elementInitialY) { }
 
@@ -35,6 +37,11 @@ namespace AdaptiveCourseClient.RenderObjects
 
             Output.Points = outputPoints;
             _canvas.Children.Add(Output);
+        }
+
+        public override void MakeConnection(ConnectionLine connectionLine)
+        {
+            _connectionLines.Add(connectionLine);
         }
     }
 }
