@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -187,7 +188,7 @@ namespace AdaptiveCourseClient.RenderObjects
             _connectionLines.Add(connectionLine);
         }
 
-        public override void FindIntersections(ConnectionLine connectionLine)
+        public override void CreateNodes(ConnectionLine connectionLine)
         {
             if (connectionLine.BeginElement == this)
             {
@@ -195,11 +196,13 @@ namespace AdaptiveCourseClient.RenderObjects
                 {
                     if (_connectionLine.BeginElement == this)
                     {
-                        Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine);
+                        Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, true);
                         if (intersectPoint.X != 0 && intersectPoint.Y != 0)
                         {
                             Node node = new Node(_canvas);
                             node.AddNode(intersectPoint);
+                            connectionLine.AddNode(node);
+                            _connectionLine.AddNode(node);
                         }
                     }
                 }
@@ -208,13 +211,15 @@ namespace AdaptiveCourseClient.RenderObjects
             {
                 foreach (ConnectionLine _connectionLine in _connectionLines)
                 {
-                    if (_connectionLine.EndElement == this)
+                    if (_connectionLine.EndElement == this && _connectionLine.ConnectionLinePolyline.Points.Last().Equals(connectionLine.ConnectionLinePolyline.Points.Last(), 0.001))
                     {
-                        Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine);
+                        Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, false);
                         if (intersectPoint.X != 0 && intersectPoint.Y != 0)
                         {
                             Node node = new Node(_canvas);
                             node.AddNode(intersectPoint);
+                            connectionLine.AddNode(node);
+                            _connectionLine.AddNode(node);
                         }
                     }
                 }

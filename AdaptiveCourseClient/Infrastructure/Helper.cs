@@ -1,5 +1,7 @@
 ﻿using AdaptiveCourseClient.RenderObjects;
 using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 
@@ -9,10 +11,26 @@ namespace AdaptiveCourseClient.Infrastructure
     {
         private static double _tolerance = 0.001;
 
-        public static Point FindIntersectionPoint(ConnectionLine connectionLine1, ConnectionLine connectionLine2)
+        // Extension for comparing points with tolerance
+        public static bool Equals(this Point point1, Point point2, double tolerance)
+        {
+            if (Math.Abs(point1.X - point2.X) < tolerance && Math.Abs(point1.Y - point2.Y) < tolerance)
+                return true;
+            else
+                return false;
+        }
+
+        public static Point FindIntersectionPoint(ConnectionLine connectionLine1, ConnectionLine connectionLine2, bool isBegin)
         {
             PointCollection points1 = connectionLine1.ConnectionLinePolyline.Points;
             PointCollection points2 = connectionLine2.ConnectionLinePolyline.Points;
+
+            if (!isBegin)
+            {
+                points1 = new PointCollection(points1.Reverse());
+                points2 = new PointCollection(points2.Reverse());
+            }
+
             int pointsNum = points1.Count < points2.Count ? points1.Count : points2.Count;
             for(int i = 1; i < pointsNum; i++)
             {

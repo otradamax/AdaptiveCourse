@@ -12,7 +12,7 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class Node
     {
-        private Ellipse NodeCircle;
+        private Ellipse _nodeCircle;
         private Canvas _canvas;
 
         private const int _nodeWidth = 10;
@@ -32,8 +32,13 @@ namespace AdaptiveCourseClient.RenderObjects
 
             Canvas.SetLeft(circle, point.X - _nodeWidth / 2);
             Canvas.SetTop(circle, point.Y - _nodeWidth / 2);
-            NodeCircle = circle;
+            _nodeCircle = circle;
             _canvas.Children.Add(circle);
+        }
+
+        public void Remove()
+        {
+            _canvas.Children.Remove(_nodeCircle);
         }
     }
 }

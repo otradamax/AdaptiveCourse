@@ -48,17 +48,19 @@ namespace AdaptiveCourseClient.RenderObjects
             _connectionLines.Add(connectionLine);
         }
 
-        public override void FindIntersections(ConnectionLine connectionLine)
+        public override void CreateNodes(ConnectionLine connectionLine)
         {
             foreach (ConnectionLine _connectionLine in _connectionLines)
             {
                 if (_connectionLine.BeginElement == this)
                 {
-                    Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine);
+                    Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, true);
                     if (intersectPoint.X != 0 && intersectPoint.Y != 0)
                     {
                         Node node = new Node(_canvas);
                         node.AddNode(intersectPoint);
+                        connectionLine.AddNode(node);
+                        _connectionLine.AddNode(node);
                     }
                 }
             }

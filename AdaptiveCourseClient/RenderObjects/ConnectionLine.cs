@@ -1,5 +1,6 @@
 ﻿using AdaptiveCourseClient.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,7 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private MainWindow _window;
         private Canvas _canvas;
+        private List<Node> _nodes = new List<Node>();
 
         public ConnectionLine(MainWindow window, Canvas canvas)
         {
@@ -59,11 +61,13 @@ namespace AdaptiveCourseClient.RenderObjects
 
             firstElement.MakeConnection(this);
             BeginElement = firstElement;
-            firstElement.FindIntersections(this);
+            firstElement.CreateNodes(this);
             lastElement.MakeConnection(this);
             EndElement = lastElement;
-            lastElement.FindIntersections(this);
+            lastElement.CreateNodes(this);
         }
+
+        public void AddNode(Node node) => _nodes.Add(node);
 
         public void SetColor(Brush color) => ConnectionLinePolyline.Stroke = color;
 
@@ -140,6 +144,20 @@ namespace AdaptiveCourseClient.RenderObjects
                 ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
                     newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
             }
+
+            // Update all nodes
+            RemoveNodes();
+            BeginElement.CreateNodes(this);
+            EndElement.CreateNodes(this);
+        }
+
+        private void RemoveNodes()
+        {
+            foreach(Node node in _nodes)
+            {
+                node.Remove();
+            }
+            _nodes.Clear();
         }
 
         private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX, double connectionLineY)

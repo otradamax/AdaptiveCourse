@@ -41,7 +41,7 @@ namespace AdaptiveCourseClient.RenderObjects
         {
         }
 
-        public override void FindIntersections(ConnectionLine connectionLine)
+        public override void CreateNodes(ConnectionLine connectionLine)
         {
         }
     }
