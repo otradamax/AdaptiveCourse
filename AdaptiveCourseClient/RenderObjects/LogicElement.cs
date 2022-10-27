@@ -194,7 +194,7 @@ namespace AdaptiveCourseClient.RenderObjects
             {
                 foreach (ConnectionLine _connectionLine in _connectionLines)
                 {
-                    if (_connectionLine.BeginElement == this)
+                    if (_connectionLine.BeginElement == this && _connectionLine != connectionLine)
                     {
                         Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, true);
                         if (intersectPoint.X != 0 && intersectPoint.Y != 0)
@@ -211,7 +211,8 @@ namespace AdaptiveCourseClient.RenderObjects
             {
                 foreach (ConnectionLine _connectionLine in _connectionLines)
                 {
-                    if (_connectionLine.EndElement == this && _connectionLine.ConnectionLinePolyline.Points.Last().Equals(connectionLine.ConnectionLinePolyline.Points.Last(), 0.001))
+                    if (_connectionLine.EndElement == this && _connectionLine != connectionLine
+                        && _connectionLine.ConnectionLinePolyline.Points.Last().Equals(connectionLine.ConnectionLinePolyline.Points.Last(), 0.001))
                     {
                         Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, false);
                         if (intersectPoint.X != 0 && intersectPoint.Y != 0)

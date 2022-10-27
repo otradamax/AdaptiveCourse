@@ -36,7 +36,7 @@ namespace AdaptiveCourseClient.Infrastructure
             {
                 if (Math.Abs(points1[i].X - points2[i].X) > _tolerance) {
                     double direction = (points1[i].X - points1[i - 1].X);
-                    if (direction > 0)
+                    if (direction >= 0)
                     {
                         if (points1[i].X > points2[i].X)
                         {
@@ -62,7 +62,12 @@ namespace AdaptiveCourseClient.Infrastructure
                 else if (Math.Abs(points1[i].Y - points2[i].Y) > _tolerance)
                 {
                     double direction = (points1[i].Y - points1[i - 1].Y);
-                    if (direction > 0)
+                    if ((points1[i].Y > points1[i - 1].Y) && (points2[i].Y < points2[i - 1].Y) || 
+                        (points1[i].Y < points1[i - 1].Y) && (points2[i].Y > points2[i - 1].Y))
+                    {
+                        return new Point(points2[i].X, points2[i - 1].Y);
+                    }
+                    else if (direction >= 0)
                     {
                         if (points1[i].Y > points2[i].Y)
                         {

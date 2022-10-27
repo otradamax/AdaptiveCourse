@@ -45,7 +45,7 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             foreach (ConnectionLine _connectionLine in _connectionLines)
             {
-                if (_connectionLine.EndElement == this)
+                if (_connectionLine.EndElement == this && _connectionLine != connectionLine)
                 {
                     Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, false);
                     if (intersectPoint.X != 0 && intersectPoint.Y != 0)
