@@ -12,8 +12,8 @@ namespace AdaptiveCourseClient.RenderObjects
         public Polygon Input;
         public int Xn;
 
-        public InputElement(Canvas canvas, double elementInitialX, double elementInitialY) 
-            : base(canvas, elementInitialX, elementInitialY) { }
+        public InputElement(Canvas canvas, double elementInitialX, double elementInitialY, double elementInitialWidth) 
+            : base(canvas, elementInitialX, elementInitialY, elementInitialWidth) { }
         
         public void AddInput(int i, int _inputsNum)
         {
@@ -28,7 +28,7 @@ namespace AdaptiveCourseClient.RenderObjects
                 _elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) - _contactWidth));
             inputPoints.Add(new Point(_elementInitialX,
                 _elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) + _contactWidth));
-            inputPoints.Add(new Point(_elementInitialX + 40,
+            inputPoints.Add(new Point(_elementInitialX + _elementInitialWidth,
                 _elementInitialY * ((double)(i + 1) / (_inputsNum + 1))));
 
             Input.Points = inputPoints;

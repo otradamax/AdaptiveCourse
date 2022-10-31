@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         KeyDown="Canvas_PreviewKeyDown"
         WindowState="Maximized"
+        MinWidth="800" MinHeight="480"
         Title="MainWindow">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -17,7 +18,7 @@
         <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.ColumnSpan="2"/>
 
         <Rectangle x:Name="Toolbox" Grid.Column="0" Fill="Wheat" Panel.ZIndex="-1"/>
-        <Rectangle x:Name="Main" Grid.Column="1" Fill="#8BD7F9" Margin="40 30 40 30" 
+        <Rectangle x:Name="Main" Grid.Column="1" Fill="#8BD7F9"
                    RadiusX="20" RadiusY="20" Panel.ZIndex="-1"/>
     </Grid>
 </Window>

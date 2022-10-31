@@ -52,6 +52,8 @@ namespace AdaptiveCourseClient
             InitializeComponent();
 
             Loaded += MainWindow_Loaded;
+            SizeChanged += MainWindow_SizeChanged;
+
             bodyCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
 
             _logicElements = new List<LogicElement>();
@@ -61,8 +63,14 @@ namespace AdaptiveCourseClient
             CreateBlocks();
         }
 
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Main.Margin = new Thickness(Main.ActualHeight / 10, Main.ActualWidth / 30, Main.ActualHeight / 10, Main.ActualWidth / 30);
+        }
+
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            Main.Margin = new Thickness(Main.ActualHeight / 10, Main.ActualWidth / 30, Main.ActualHeight / 10, Main.ActualWidth / 30);
             CreateInputs();
             CreateOutput();
         }
@@ -71,7 +79,7 @@ namespace AdaptiveCourseClient
         {
             for (int i = 0; i < _inputsNum; i++)
             {
-                InputElement input = new InputElement(bodyCanvas, Toolbox.ActualWidth, this.Height);
+                InputElement input = new InputElement(bodyCanvas, Toolbox.ActualWidth, this.Height, Main.ActualWidth / 30);
                 input.AddInput(i, _inputsNum);
                 input.Input.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
@@ -80,7 +88,7 @@ namespace AdaptiveCourseClient
 
         private void CreateOutput()
         {
-            OutputElement output = new OutputElement(bodyCanvas, Toolbox.ActualWidth, this.Height);
+            OutputElement output = new OutputElement(bodyCanvas, Toolbox.ActualWidth, this.Height, Main.ActualWidth / 30);
             output.AddOutput();
             _output = output;
         }

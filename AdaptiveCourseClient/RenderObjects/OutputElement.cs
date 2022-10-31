@@ -11,8 +11,8 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         public Polygon Output;
 
-        public OutputElement(Canvas canvas, double elementInitialX, double elementInitialY)
-            : base(canvas, elementInitialX, elementInitialY) { }
+        public OutputElement(Canvas canvas, double elementInitialX, double elementInitialY, double elementInitialWidth)
+            : base(canvas, elementInitialX, elementInitialY, elementInitialWidth) { }
 
         public void AddOutput()
         {
@@ -27,7 +27,7 @@ namespace AdaptiveCourseClient.RenderObjects
                 _elementInitialY / 2 - _contactWidth));
             outputPoints.Add(new Point(_canvas.ActualWidth,
                 _elementInitialY / 2 + _contactWidth));
-            outputPoints.Add(new Point(_canvas.ActualWidth - 40,
+            outputPoints.Add(new Point(_canvas.ActualWidth - _elementInitialWidth,
                 _elementInitialY / 2));
 
             Output.Points = outputPoints;
