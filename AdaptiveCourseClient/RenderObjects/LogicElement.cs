@@ -74,12 +74,17 @@ namespace AdaptiveCourseClient.RenderObjects
             AddOutputSnapColoringEvent();
         }
 
-        public void RemoveBlock()
+        public void Remove()
         {
             foreach(UIElement logicElementPart in LogicBlock)
             {
                 _canvas.Children.Remove(logicElementPart);
             }
+            for (int i = _connectionLines.Count - 1; i >= 0; i--)
+            {
+                _connectionLines[i].Remove();
+            }
+            _connectionLines.Clear();
         }
 
         public void AddOutputSnap()

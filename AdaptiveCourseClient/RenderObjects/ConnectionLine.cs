@@ -160,10 +160,11 @@ namespace AdaptiveCourseClient.RenderObjects
             _nodes.Clear();
         }
 
-        public void Finalizer()
+        public void Remove()
         {
             BeginElement._connectionLines.Remove(this);
             EndElement._connectionLines.Remove(this);
+            _canvas.Children.Remove(ConnectionLinePolyline);
             RemoveNodes();
         }
 

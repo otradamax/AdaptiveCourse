@@ -148,8 +148,7 @@ namespace AdaptiveCourseClient
                 if (connectionLines.Contains(SelectedLine))
                 {
                     connectionLines.Remove(SelectedLine);
-                    bodyCanvas.Children.Remove(SelectedLine.ConnectionLinePolyline);
-                    SelectedLine.Finalizer();
+                    SelectedLine.Remove();
                     IsConnectionLineSelected = false;
                     SelectedLine = null;
                 }
@@ -334,7 +333,7 @@ namespace AdaptiveCourseClient
             // Moving logic element to toolbox case
             if (Canvas.GetLeft(SelectedLogicElement) < Toolbox.ActualWidth)
             {
-                _logicElement.RemoveBlock();
+                _logicElement.Remove();
                 _logicElement.AddBlock();
                 _logicElement.OutputSnap.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _logicElement.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
