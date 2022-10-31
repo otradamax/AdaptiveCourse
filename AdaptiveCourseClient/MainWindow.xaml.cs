@@ -149,6 +149,7 @@ namespace AdaptiveCourseClient
                 {
                     connectionLines.Remove(SelectedLine);
                     bodyCanvas.Children.Remove(SelectedLine.ConnectionLinePolyline);
+                    SelectedLine.Finalizer();
                     IsConnectionLineSelected = false;
                     SelectedLine = null;
                 }

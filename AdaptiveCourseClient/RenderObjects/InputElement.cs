@@ -12,8 +12,6 @@ namespace AdaptiveCourseClient.RenderObjects
         public Polygon Input;
         public int Xn;
 
-        private List<ConnectionLine> _connectionLines = new List<ConnectionLine>();
-
         public InputElement(Canvas canvas, double elementInitialX, double elementInitialY) 
             : base(canvas, elementInitialX, elementInitialY) { }
         

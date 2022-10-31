@@ -160,6 +160,13 @@ namespace AdaptiveCourseClient.RenderObjects
             _nodes.Clear();
         }
 
+        public void Finalizer()
+        {
+            BeginElement._connectionLines.Remove(this);
+            EndElement._connectionLines.Remove(this);
+            RemoveNodes();
+        }
+
         private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX, double connectionLineY)
         {
             PointCollection points = new PointCollection();

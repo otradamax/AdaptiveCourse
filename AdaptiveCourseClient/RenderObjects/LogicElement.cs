@@ -17,7 +17,6 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private Rectangle? _body;
         private Shape? _negativeOutputCircle;
-        private List<ConnectionLine> _connectionLines = new List<ConnectionLine>();
 
         public static readonly int OutputCircleDiameter = 16;
         public static readonly int SnapCircleDiameter = 16;
