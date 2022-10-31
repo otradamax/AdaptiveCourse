@@ -39,6 +39,16 @@ namespace AdaptiveCourseClient.RenderObjects
             Xn = i;
 
             _canvas.Children.Add(Input);
+
+            // Add text
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = "X" + i;
+            textBlock.FontWeight = FontWeights.Bold;
+            textBlock.FontSize = 10;
+            textBlock.FontStyle = FontStyles.Italic;
+            Canvas.SetLeft(textBlock, _elementInitialX + 2);
+            Canvas.SetTop(textBlock, _elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) - _contactWidth + 2);
+            _canvas.Children.Add(textBlock);
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)

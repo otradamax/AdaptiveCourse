@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:AdaptiveCourseClient"
         mc:Ignorable="d"
         KeyDown="Canvas_PreviewKeyDown"
-        ResizeMode="NoResize"
-        Title="MainWindow" Height="450" Width="800">
+        WindowState="Maximized"
+        Title="MainWindow">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>

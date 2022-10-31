@@ -32,6 +32,16 @@ namespace AdaptiveCourseClient.RenderObjects
 
             Output.Points = outputPoints;
             _canvas.Children.Add(Output);
+
+            // Add text
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = "Y";
+            textBlock.FontWeight = FontWeights.Bold;
+            textBlock.FontSize = 10;
+            textBlock.FontStyle = FontStyles.Italic;
+            Canvas.SetLeft(textBlock, _canvas.ActualWidth - 10);
+            Canvas.SetTop(textBlock, _elementInitialY / 2 - _contactWidth + 2);
+            _canvas.Children.Add(textBlock);
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)
