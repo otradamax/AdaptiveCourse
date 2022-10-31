@@ -11,25 +11,41 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         public Polygon Input;
         public int Xn;
+        private int _inputsNum;
+        private TextBlock _textBlock;
 
-        public InputElement(Canvas canvas, double elementInitialX, double elementInitialY, double elementInitialWidth) 
-            : base(canvas, elementInitialX, elementInitialY, elementInitialWidth) { }
-        
-        public void AddInput(int i, int _inputsNum)
+        public InputElement(Canvas canvas, int inputsNum) 
+            : base(canvas) 
         {
+            _inputsNum = inputsNum;
+        }
+        
+        public void AddInput(int i, double elementInitialX, double elementInitialY, double elementInitialWidth)
+        {
+            // Add text
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = "X" + i;
+            textBlock.FontWeight = FontWeights.Bold;
+            textBlock.FontSize = _textSize;
+            textBlock.FontStyle = FontStyles.Italic;
+            Canvas.SetLeft(textBlock, elementInitialX + 2);
+            Canvas.SetTop(textBlock, elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) - _contactWidth / 2);
+            _textBlock = textBlock;
+            _canvas.Children.Add(textBlock);
+
             Input = new Polygon();
-            Input.Fill = Brushes.White;
+            Input.Fill = Brushes.Transparent;
             Input.Stroke = Brushes.Black;
             Input.StrokeThickness = 3;
 
             // Creating a triangle input
             PointCollection inputPoints = new PointCollection();
-            inputPoints.Add(new Point(_elementInitialX,
-                _elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) - _contactWidth));
-            inputPoints.Add(new Point(_elementInitialX,
-                _elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) + _contactWidth));
-            inputPoints.Add(new Point(_elementInitialX + _elementInitialWidth,
-                _elementInitialY * ((double)(i + 1) / (_inputsNum + 1))));
+            inputPoints.Add(new Point(elementInitialX,
+                elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) - _contactWidth));
+            inputPoints.Add(new Point(elementInitialX,
+                elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) + _contactWidth));
+            inputPoints.Add(new Point(elementInitialX + elementInitialWidth,
+                elementInitialY * ((double)(i + 1) / (_inputsNum + 1))));
 
             Input.Points = inputPoints;
             Input.MouseMove += Input_MouseMove;
@@ -39,16 +55,22 @@ namespace AdaptiveCourseClient.RenderObjects
             Xn = i;
 
             _canvas.Children.Add(Input);
+        }
 
-            // Add text
-            TextBlock textBlock = new TextBlock();
-            textBlock.Text = "X" + i;
-            textBlock.FontWeight = FontWeights.Bold;
-            textBlock.FontSize = 10;
-            textBlock.FontStyle = FontStyles.Italic;
-            Canvas.SetLeft(textBlock, _elementInitialX + 2);
-            Canvas.SetTop(textBlock, _elementInitialY * ((double)(i + 1) / (_inputsNum + 1)) - _contactWidth + 2);
-            _canvas.Children.Add(textBlock);
+        public void ChangeLocation(double elementInitialX, double elementInitialY, double elementInitialWidth)
+        {
+            Canvas.SetLeft(_textBlock, elementInitialX + 2);
+            Canvas.SetTop(_textBlock, elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth / 2);
+
+            Input.Points.Clear();
+            PointCollection inputPoints = new PointCollection();
+            inputPoints.Add(new Point(elementInitialX,
+                elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth));
+            inputPoints.Add(new Point(elementInitialX,
+                elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) + _contactWidth));
+            inputPoints.Add(new Point(elementInitialX + elementInitialWidth,
+                elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1))));
+            Input.Points = inputPoints;
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)

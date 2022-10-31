@@ -45,11 +45,11 @@ namespace AdaptiveCourseClient.Infrastructure
             imgBrush.ImageSource = new BitmapImage(new Uri(@"../../../../images/and.png", UriKind.Relative));
             rectangle.Width = bodyWidth;
             rectangle.Height = bodyHeight;
-            rectangle.RadiusX = 3;
-            rectangle.RadiusY = 3;
+            rectangle.RadiusX = 5;
+            rectangle.RadiusY = 5;
             rectangle.Fill = imgBrush;
             rectangle.Stroke = Brushes.Black;
-            rectangle.StrokeThickness = 5;
+            rectangle.StrokeThickness = 3;
             return rectangle;
         }
 

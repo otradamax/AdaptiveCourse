@@ -7,18 +7,12 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class IOElement : Element
     {
-        protected double _elementInitialX;
-        protected double _elementInitialY;
-        protected double _elementInitialWidth;
+        protected readonly double _contactWidth = 20;
+        protected readonly double _textSize = 14;
 
-        protected readonly double _contactWidth = 10;
-
-        public IOElement(Canvas canvas, double elementInitialX, double elementInitialY, double elementInitialWidth) : base(canvas)
+        public IOElement(Canvas canvas) : base(canvas)
         {
             _canvas = canvas;
-            _elementInitialX = elementInitialX;
-            _elementInitialY = elementInitialY;
-            _elementInitialWidth = elementInitialWidth;
         }
 
         protected void Input_MouseMove(object sender, MouseEventArgs e)

@@ -18,13 +18,13 @@ namespace AdaptiveCourseClient.RenderObjects
         private Rectangle? _body;
         private Shape? _negativeOutputCircle;
 
-        public static readonly int OutputCircleDiameter = 16;
-        public static readonly int SnapCircleDiameter = 16;
-        public static readonly int ContactWidth = 8;
-        public readonly int BodyWidth = 50;
-        public readonly int BodyHeight = 70;
+        public static readonly int OutputCircleDiameter = 24;
+        public static readonly int SnapCircleDiameter = 24;
+        public static readonly int ContactWidth = 12;
+        public readonly int BodyWidth = 70;
+        public readonly int BodyHeight = 100;
 
-        private static readonly int _bodyInitialX = 50;
+        private static readonly int _bodyInitialX = 100;
         private static readonly int _bodyInitialY = 50;
         private static readonly int _inputsNumber = 2;
 

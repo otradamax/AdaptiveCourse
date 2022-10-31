@@ -10,38 +10,56 @@ namespace AdaptiveCourseClient.RenderObjects
     public class OutputElement : IOElement
     {
         public Polygon Output;
+        private TextBlock _textBlock;
 
-        public OutputElement(Canvas canvas, double elementInitialX, double elementInitialY, double elementInitialWidth)
-            : base(canvas, elementInitialX, elementInitialY, elementInitialWidth) { }
+        public OutputElement(Canvas canvas)
+            : base(canvas) { }
 
-        public void AddOutput()
+        public void AddOutput(double elementInitialY, double elementInitialWidth)
         {
+            // Add text
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = "Y";
+            textBlock.FontWeight = FontWeights.Bold;
+            textBlock.FontSize = _textSize;
+            textBlock.FontStyle = FontStyles.Italic;
+            Canvas.SetLeft(textBlock, _canvas.ActualWidth - _contactWidth);
+            Canvas.SetTop(textBlock, elementInitialY / 2 - _contactWidth / 2);
+            _textBlock = textBlock;
+            _canvas.Children.Add(textBlock);
+
             Output = new Polygon();
-            Output.Fill = Brushes.White;
+            Output.Fill = Brushes.Transparent;
             Output.Stroke = Brushes.Black;
             Output.StrokeThickness = 3;
 
             // Creating a triangle output
             PointCollection outputPoints = new PointCollection();
             outputPoints.Add(new Point(_canvas.ActualWidth,
-                _elementInitialY / 2 - _contactWidth));
+                elementInitialY / 2 - _contactWidth));
             outputPoints.Add(new Point(_canvas.ActualWidth,
-                _elementInitialY / 2 + _contactWidth));
-            outputPoints.Add(new Point(_canvas.ActualWidth - _elementInitialWidth,
-                _elementInitialY / 2));
+                elementInitialY / 2 + _contactWidth));
+            outputPoints.Add(new Point(_canvas.ActualWidth - elementInitialWidth,
+                elementInitialY / 2));
 
             Output.Points = outputPoints;
             _canvas.Children.Add(Output);
+        }
 
-            // Add text
-            TextBlock textBlock = new TextBlock();
-            textBlock.Text = "Y";
-            textBlock.FontWeight = FontWeights.Bold;
-            textBlock.FontSize = 10;
-            textBlock.FontStyle = FontStyles.Italic;
-            Canvas.SetLeft(textBlock, _canvas.ActualWidth - 10);
-            Canvas.SetTop(textBlock, _elementInitialY / 2 - _contactWidth + 2);
-            _canvas.Children.Add(textBlock);
+        public void ChangeLocation(double elementInitialY, double elementInitialWidth)
+        {
+            Canvas.SetLeft(_textBlock, _canvas.ActualWidth - _contactWidth);
+            Canvas.SetTop(_textBlock, elementInitialY / 2 - _contactWidth / 2);
+
+            Output.Points.Clear();
+            PointCollection outputPoints = new PointCollection();
+            outputPoints.Add(new Point(_canvas.ActualWidth,
+                elementInitialY / 2 - _contactWidth));
+            outputPoints.Add(new Point(_canvas.ActualWidth,
+                elementInitialY / 2 + _contactWidth));
+            outputPoints.Add(new Point(_canvas.ActualWidth - elementInitialWidth,
+                elementInitialY / 2));
+            Output.Points = outputPoints;
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)
