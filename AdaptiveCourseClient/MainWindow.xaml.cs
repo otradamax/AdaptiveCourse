@@ -55,7 +55,6 @@ namespace AdaptiveCourseClient
             InitializeComponent();
 
             Loaded += MainWindow_Loaded;
-            SizeChanged += MainWindow_SizeChanged;
 
             bodyCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
 
@@ -66,37 +65,28 @@ namespace AdaptiveCourseClient
             CreateBlocks();
         }
 
-        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // Do not execute before inputs/outputs were not created
-            if (_output != null)
-            {
-                _mainLeftRightMargin = Main.ActualWidth / 20;
-                _mainTopBottomMargin = Main.ActualHeight / 10;
-                Main.Margin = new Thickness(_mainLeftRightMargin, _mainTopBottomMargin, _mainLeftRightMargin, _mainTopBottomMargin);
-                foreach (InputElement input in _inputs)
-                {
-                    input.ChangeLocation(Toolbox.ActualWidth, this.ActualHeight, _mainLeftRightMargin);
-                }
-                _output.ChangeLocation(this.ActualHeight, _mainLeftRightMargin);
-            }
-        }
-
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            _mainLeftRightMargin = Main.ActualWidth / 20;
+            double mainWidth = bodyCanvas.ActualWidth * 4 / 5;
+            double toolboxWidth = bodyCanvas.ActualWidth / 5;
+
+            column0.Width = new GridLength(toolboxWidth, GridUnitType.Pixel);
+            column1.Width = new GridLength(mainWidth, GridUnitType.Pixel);
+            row.Height = new GridLength(bodyCanvas.ActualHeight, GridUnitType.Pixel);
+
+            _mainLeftRightMargin = mainWidth / 20;
             _mainTopBottomMargin = Main.ActualHeight / 10;
             Main.Margin = new Thickness(_mainLeftRightMargin, _mainTopBottomMargin, _mainLeftRightMargin, _mainTopBottomMargin);
-            CreateInputs();
+            CreateInputs(toolboxWidth);
             CreateOutput();
         }
 
-        private void CreateInputs()
+        private void CreateInputs(double toolboxWidth)
         {
             for (int i = 0; i < _inputsNum; i++)
             {
                 InputElement input = new InputElement(bodyCanvas, _inputsNum);
-                input.AddInput(i, Toolbox.ActualWidth, this.Height, _mainLeftRightMargin);
+                input.AddInput(i, toolboxWidth, this.Height, _mainLeftRightMargin);
                 input.Body.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
             }
@@ -105,7 +95,7 @@ namespace AdaptiveCourseClient
         private void CreateOutput()
         {
             OutputElement output = new OutputElement(bodyCanvas);
-            output.AddOutput(this.Height, _mainLeftRightMargin);
+            output.AddOutput(this.Height, bodyCanvas.ActualWidth, _mainLeftRightMargin);
             _output = output;
         }
 

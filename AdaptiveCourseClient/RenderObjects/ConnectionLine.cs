@@ -151,31 +151,6 @@ namespace AdaptiveCourseClient.RenderObjects
             EndElement.CreateNodes(this);
         }
 
-        public void MoveConnectionLine(IOElement contact, double newX, double newY)
-        {
-            double precision = 0.01;
-            Point firstConnectionPoint = ConnectionLinePolyline.Points[0];
-            Point lastConnectionPoint = ConnectionLinePolyline.Points.Last();
-            Point contactPoint = contact.Body.Points.Last();
-
-            // Connection line direction determination
-            if (Math.Abs(firstConnectionPoint.X - contactPoint.X) < precision && Math.Abs(firstConnectionPoint.Y - contactPoint.Y) < precision)
-            {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points,
-                    newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
-            }
-            else if (Math.Abs(lastConnectionPoint.X - contactPoint.X) < precision && Math.Abs(lastConnectionPoint.Y - contactPoint.Y) < precision)
-            {
-                ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()),
-                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
-            }
-
-            // Update all nodes
-            RemoveNodes();
-            BeginElement.CreateNodes(this);
-            EndElement.CreateNodes(this);
-        }
-
         private void RemoveNodes()
         {
             foreach(Node node in _nodes)

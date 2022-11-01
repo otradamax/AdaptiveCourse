@@ -14,7 +14,7 @@ namespace AdaptiveCourseClient.RenderObjects
         public OutputElement(Canvas canvas)
             : base(canvas) { }
 
-        public void AddOutput(double elementInitialY, double elementInitialWidth)
+        public void AddOutput(double elementInitialY, double windowWidth, double elementInitialWidth)
         {
             // Add text
             TextBlock textBlock = new TextBlock();
@@ -22,7 +22,7 @@ namespace AdaptiveCourseClient.RenderObjects
             textBlock.FontWeight = FontWeights.Bold;
             textBlock.FontSize = _textSize;
             textBlock.FontStyle = FontStyles.Italic;
-            Canvas.SetLeft(textBlock, _canvas.ActualWidth - _contactWidth);
+            Canvas.SetLeft(textBlock, windowWidth - _contactWidth);
             Canvas.SetTop(textBlock, elementInitialY / 2 - _contactWidth / 2);
             _textBlock = textBlock;
             _canvas.Children.Add(textBlock);
@@ -34,11 +34,11 @@ namespace AdaptiveCourseClient.RenderObjects
 
             // Creating a triangle output
             PointCollection outputPoints = new PointCollection();
-            outputPoints.Add(new Point(_canvas.ActualWidth,
+            outputPoints.Add(new Point(windowWidth,
                 elementInitialY / 2 - _contactWidth));
-            outputPoints.Add(new Point(_canvas.ActualWidth,
+            outputPoints.Add(new Point(windowWidth,
                 elementInitialY / 2 + _contactWidth));
-            outputPoints.Add(new Point(_canvas.ActualWidth - elementInitialWidth,
+            outputPoints.Add(new Point(windowWidth - elementInitialWidth,
                 elementInitialY / 2));
 
             Body.Points = outputPoints;
@@ -49,12 +49,6 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             Point finalPoint = new Point(_canvas.ActualWidth - elementInitialWidth,
                 elementInitialY / 2);
-
-            // All connection lines moving
-            foreach (ConnectionLine connectionLine in _connectionLines)
-            {
-                connectionLine.MoveConnectionLine(this, finalPoint.X, finalPoint.Y);
-            }
 
             Canvas.SetLeft(_textBlock, _canvas.ActualWidth - _contactWidth);
             Canvas.SetTop(_textBlock, elementInitialY / 2 - _contactWidth / 2);

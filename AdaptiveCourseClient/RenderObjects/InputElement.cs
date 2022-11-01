@@ -61,12 +61,6 @@ namespace AdaptiveCourseClient.RenderObjects
             Point finalPoint = new Point(elementInitialX + elementInitialWidth,
                 elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)));
 
-            // All connection lines moving
-            foreach (ConnectionLine connectionLine in _connectionLines)
-            {
-                connectionLine.MoveConnectionLine(this, finalPoint.X, finalPoint.Y);
-            }
-
             Canvas.SetLeft(_textBlock, elementInitialX + 2);
             Canvas.SetTop(_textBlock, elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth / 2);
 
