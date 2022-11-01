@@ -9,7 +9,6 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class OutputElement : IOElement
     {
-        public Polygon Output;
         private TextBlock _textBlock;
 
         public OutputElement(Canvas canvas)
@@ -28,10 +27,10 @@ namespace AdaptiveCourseClient.RenderObjects
             _textBlock = textBlock;
             _canvas.Children.Add(textBlock);
 
-            Output = new Polygon();
-            Output.Fill = Brushes.Transparent;
-            Output.Stroke = Brushes.Black;
-            Output.StrokeThickness = 3;
+            Body = new Polygon();
+            Body.Fill = Brushes.Transparent;
+            Body.Stroke = Brushes.Black;
+            Body.StrokeThickness = 3;
 
             // Creating a triangle output
             PointCollection outputPoints = new PointCollection();
@@ -42,24 +41,32 @@ namespace AdaptiveCourseClient.RenderObjects
             outputPoints.Add(new Point(_canvas.ActualWidth - elementInitialWidth,
                 elementInitialY / 2));
 
-            Output.Points = outputPoints;
-            _canvas.Children.Add(Output);
+            Body.Points = outputPoints;
+            _canvas.Children.Add(Body);
         }
 
         public void ChangeLocation(double elementInitialY, double elementInitialWidth)
         {
+            Point finalPoint = new Point(_canvas.ActualWidth - elementInitialWidth,
+                elementInitialY / 2);
+
+            // All connection lines moving
+            foreach (ConnectionLine connectionLine in _connectionLines)
+            {
+                connectionLine.MoveConnectionLine(this, finalPoint.X, finalPoint.Y);
+            }
+
             Canvas.SetLeft(_textBlock, _canvas.ActualWidth - _contactWidth);
             Canvas.SetTop(_textBlock, elementInitialY / 2 - _contactWidth / 2);
 
-            Output.Points.Clear();
+            Body.Points.Clear();
             PointCollection outputPoints = new PointCollection();
             outputPoints.Add(new Point(_canvas.ActualWidth,
                 elementInitialY / 2 - _contactWidth));
             outputPoints.Add(new Point(_canvas.ActualWidth,
                 elementInitialY / 2 + _contactWidth));
-            outputPoints.Add(new Point(_canvas.ActualWidth - elementInitialWidth,
-                elementInitialY / 2));
-            Output.Points = outputPoints;
+            outputPoints.Add(finalPoint);
+            Body.Points = outputPoints;
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)

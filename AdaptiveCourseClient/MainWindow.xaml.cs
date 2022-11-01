@@ -97,7 +97,7 @@ namespace AdaptiveCourseClient
             {
                 InputElement input = new InputElement(bodyCanvas, _inputsNum);
                 input.AddInput(i, Toolbox.ActualWidth, this.Height, _mainLeftRightMargin);
-                input.Input.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
+                input.Body.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
             }
         }
@@ -189,7 +189,7 @@ namespace AdaptiveCourseClient
                     inputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Transparent;
                 }
             }
-            Shape outnputSnap = (Polygon)_output.Output;
+            Shape outnputSnap = (Polygon)_output.Body;
             outnputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Black;
         }
 
@@ -219,7 +219,7 @@ namespace AdaptiveCourseClient
 
         private void AddEventsForEndingContacts()
         {
-            _output.Output.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
+            _output.Body.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
             foreach (LogicElement uIElement in _logicElements)
             {
                 foreach(UIElement outputSnap in uIElement.InputsSnap)
@@ -231,7 +231,7 @@ namespace AdaptiveCourseClient
 
         private void RemoveEventsForEndingContacts()
         {
-            _output.Output.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
+            _output.Body.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
             foreach (LogicElement uIElement in _logicElements)
             {
                 foreach (UIElement outputSnap in uIElement.InputsSnap)
@@ -254,7 +254,7 @@ namespace AdaptiveCourseClient
                 Polygon polygon = (Polygon)_beginningContact;
                 foreach (InputElement input in _inputs)
                 {
-                    if (input.Input == polygon)
+                    if (input.Body == polygon)
                         firstElement = input;
                 }
                 firstPoint = polygon.Points.Last();

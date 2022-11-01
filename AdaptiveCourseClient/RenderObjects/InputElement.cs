@@ -9,7 +9,6 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class InputElement : IOElement
     {
-        public Polygon Input;
         public int Xn;
         private int _inputsNum;
         private TextBlock _textBlock;
@@ -33,10 +32,10 @@ namespace AdaptiveCourseClient.RenderObjects
             _textBlock = textBlock;
             _canvas.Children.Add(textBlock);
 
-            Input = new Polygon();
-            Input.Fill = Brushes.Transparent;
-            Input.Stroke = Brushes.Black;
-            Input.StrokeThickness = 3;
+            Body = new Polygon();
+            Body.Fill = Brushes.Transparent;
+            Body.Stroke = Brushes.Black;
+            Body.StrokeThickness = 3;
 
             // Creating a triangle input
             PointCollection inputPoints = new PointCollection();
@@ -47,30 +46,40 @@ namespace AdaptiveCourseClient.RenderObjects
             inputPoints.Add(new Point(elementInitialX + elementInitialWidth,
                 elementInitialY * ((double)(i + 1) / (_inputsNum + 1))));
 
-            Input.Points = inputPoints;
-            Input.MouseMove += Input_MouseMove;
-            Input.MouseLeave += Input_MouseLeave;
+            Body.Points = inputPoints;
+            Body.MouseMove += Input_MouseMove;
+            Body.MouseLeave += Input_MouseLeave;
 
             // Index number
             Xn = i;
 
-            _canvas.Children.Add(Input);
+            _canvas.Children.Add(Body);
         }
 
         public void ChangeLocation(double elementInitialX, double elementInitialY, double elementInitialWidth)
         {
+            Point finalPoint = new Point(elementInitialX + elementInitialWidth,
+                elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)));
+
+            // All connection lines moving
+            foreach (ConnectionLine connectionLine in _connectionLines)
+            {
+                connectionLine.MoveConnectionLine(this, finalPoint.X, finalPoint.Y);
+            }
+
             Canvas.SetLeft(_textBlock, elementInitialX + 2);
             Canvas.SetTop(_textBlock, elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth / 2);
 
-            Input.Points.Clear();
+            Body.Points.Clear();
             PointCollection inputPoints = new PointCollection();
             inputPoints.Add(new Point(elementInitialX,
                 elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth));
             inputPoints.Add(new Point(elementInitialX,
                 elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) + _contactWidth));
-            inputPoints.Add(new Point(elementInitialX + elementInitialWidth,
-                elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1))));
-            Input.Points = inputPoints;
+            inputPoints.Add(finalPoint);
+            Body.Points = inputPoints;
+
+            
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)
@@ -98,14 +107,14 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void AddColoringEvent()
         {
-            Input.MouseMove += Input_MouseMove;
-            Input.MouseLeave += Input_MouseLeave;
+            Body.MouseMove += Input_MouseMove;
+            Body.MouseLeave += Input_MouseLeave;
         }
 
         public void RemoveColoringEvent()
         {
-            Input.MouseMove -= Input_MouseMove;
-            Input.MouseLeave -= Input_MouseLeave;
+            Body.MouseMove -= Input_MouseMove;
+            Body.MouseLeave -= Input_MouseLeave;
         }
     }
 }
