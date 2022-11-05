@@ -65,6 +65,8 @@ namespace AdaptiveCourseClient.RenderObjects
             lastElement!.MakeConnection(this);
             EndElement = lastElement;
             lastElement.CreateNodes(this);
+
+            Graph.AddEdge(firstElement.Name, lastElement.Name);
         }
 
         public void AddNode(Node node) => _nodes.Add(node);
@@ -169,6 +171,7 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void Remove()
         {
+            Graph.RemoveEdge(BeginElement!.Name, EndElement!.Name);
             BeginElement?._connectionLines.Remove(this);
             EndElement?._connectionLines.Remove(this);
             _canvas.Children.Remove(ConnectionLinePolyline);

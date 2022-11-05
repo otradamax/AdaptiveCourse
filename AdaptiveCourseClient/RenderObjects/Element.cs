@@ -7,6 +7,8 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         protected Canvas _canvas;
 
+        public string Name;
+
         public Element(Canvas canvas)
         {
             _canvas = canvas;

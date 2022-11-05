@@ -43,6 +43,9 @@ namespace AdaptiveCourseClient.RenderObjects
 
             Body.Points = outputPoints;
             _canvas.Children.Add(Body);
+
+            Name = "Y";
+            Graph.AddNode(Name);
         }
 
         public void ChangeLocation(double elementInitialY, double elementInitialWidth)
@@ -53,7 +56,7 @@ namespace AdaptiveCourseClient.RenderObjects
             Canvas.SetLeft(_textBlock, _canvas.ActualWidth - _contactWidth);
             Canvas.SetTop(_textBlock, elementInitialY / 2 - _contactWidth / 2);
 
-            Body.Points.Clear();
+            Body!.Points.Clear();
             PointCollection outputPoints = new PointCollection();
             outputPoints.Add(new Point(_canvas.ActualWidth,
                 elementInitialY / 2 - _contactWidth));

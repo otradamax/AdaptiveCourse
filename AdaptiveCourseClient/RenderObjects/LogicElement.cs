@@ -33,7 +33,7 @@ namespace AdaptiveCourseClient.RenderObjects
             _canvas = canvas;
         }
 
-        public void AddBlock()
+        public void AddBlock(int serialNumber)
         {
             LogicBlock = new UIElementGroup();
             InputsSnap = new UIElementGroup();
@@ -72,9 +72,12 @@ namespace AdaptiveCourseClient.RenderObjects
             AddOutputSnap();
             AddInputsSnap();
             AddOutputSnapColoringEvent();
+
+            Name = "AND" + serialNumber;
+            Graph.AddNode(Name);
         }
 
-        public void Remove()
+        public int Remove()
         {
             if (LogicBlock != null)
             {
@@ -88,6 +91,9 @@ namespace AdaptiveCourseClient.RenderObjects
                 }
                 _connectionLines.Clear();
             }
+            int serialNumber = 0;
+            int.TryParse(Name.Substring("AND".Length), out serialNumber);
+            return serialNumber;
         }
 
         public void AddOutputSnap()

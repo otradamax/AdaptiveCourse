@@ -54,6 +54,9 @@ namespace AdaptiveCourseClient.RenderObjects
             Xn = i;
 
             _canvas.Children.Add(Body);
+
+            Name = "X" + i;
+            Graph.AddNode(Name);
         }
 
         public void ChangeLocation(double elementInitialX, double elementInitialY, double elementInitialWidth)
@@ -64,7 +67,7 @@ namespace AdaptiveCourseClient.RenderObjects
             Canvas.SetLeft(_textBlock, elementInitialX + 2);
             Canvas.SetTop(_textBlock, elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth / 2);
 
-            Body.Points.Clear();
+            Body!.Points.Clear();
             PointCollection inputPoints = new PointCollection();
             inputPoints.Add(new Point(elementInitialX,
                 elementInitialY * ((double)(Xn + 1) / (_inputsNum + 1)) - _contactWidth));
@@ -101,14 +104,14 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void AddColoringEvent()
         {
-            Body.MouseMove += Input_MouseMove;
-            Body.MouseLeave += Input_MouseLeave;
+            Body!.MouseMove += Input_MouseMove;
+            Body!.MouseLeave += Input_MouseLeave;
         }
 
         public void RemoveColoringEvent()
         {
-            Body.MouseMove -= Input_MouseMove;
-            Body.MouseLeave -= Input_MouseLeave;
+            Body!.MouseMove -= Input_MouseMove;
+            Body!.MouseLeave -= Input_MouseLeave;
         }
     }
 }

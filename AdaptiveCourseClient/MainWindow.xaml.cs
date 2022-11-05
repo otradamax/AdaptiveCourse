@@ -105,7 +105,7 @@ namespace AdaptiveCourseClient
             {
                 LogicElement element = new LogicElement(bodyCanvas);
                 _logicElements.Add(element);
-                element.AddBlock();
+                element.AddBlock(i);
                 element.OutputSnap!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 element.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
@@ -347,8 +347,8 @@ namespace AdaptiveCourseClient
             // Moving logic element to toolbox case
             if (Canvas.GetLeft(SelectedLogicElement) < Toolbox.ActualWidth)
             {
-                _logicElement.Remove();
-                _logicElement.AddBlock();
+                int serialNumber = _logicElement.Remove();
+                _logicElement.AddBlock(serialNumber);
                 _logicElement.OutputSnap!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _logicElement.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
