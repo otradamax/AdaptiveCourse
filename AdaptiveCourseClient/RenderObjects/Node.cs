@@ -12,7 +12,7 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class Node
     {
-        private Ellipse _nodeCircle;
+        private Ellipse? _nodeCircle;
         private Canvas _canvas;
 
         private const int _nodeWidth = 10;

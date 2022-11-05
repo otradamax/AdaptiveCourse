@@ -9,7 +9,7 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class OutputElement : IOElement
     {
-        private TextBlock _textBlock;
+        private TextBlock? _textBlock;
 
         public OutputElement(Canvas canvas)
             : base(canvas) { }

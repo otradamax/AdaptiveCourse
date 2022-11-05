@@ -12,9 +12,9 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class ConnectionLine
     {
-        public Polyline ConnectionLinePolyline { get; set; }
-        public Element BeginElement { get; set; }
-        public Element EndElement { get; set; }
+        public Polyline? ConnectionLinePolyline { get; set; }
+        public Element? BeginElement { get; set; }
+        public Element? EndElement { get; set; }
 
         private MainWindow _window;
         private Canvas _canvas;
@@ -26,7 +26,7 @@ namespace AdaptiveCourseClient.RenderObjects
             _canvas = canvas;
         }
 
-        public void AddConnectionLine(Point firstPoint, Point lastPoint, Element firstElement, Element lastElement)
+        public void AddConnectionLine(Point firstPoint, Point lastPoint, Element? firstElement, Element? lastElement)
         {
             Polyline connectionLine = Figures.AddConnectionLine();
 
@@ -59,17 +59,21 @@ namespace AdaptiveCourseClient.RenderObjects
             _canvas.Children.Add(connectionLine);
             ConnectionLinePolyline = connectionLine;
 
-            firstElement.MakeConnection(this);
+            firstElement!.MakeConnection(this);
             BeginElement = firstElement;
             firstElement.CreateNodes(this);
-            lastElement.MakeConnection(this);
+            lastElement!.MakeConnection(this);
             EndElement = lastElement;
             lastElement.CreateNodes(this);
         }
 
         public void AddNode(Node node) => _nodes.Add(node);
 
-        public void SetColor(Brush color) => ConnectionLinePolyline.Stroke = color;
+        public void SetColor(Brush color)
+        {
+            if (ConnectionLinePolyline != null) 
+                ConnectionLinePolyline.Stroke = color;
+        }
 
         private void ConnectionLine_MouseLeave(object sender, MouseEventArgs e)
         {
@@ -84,7 +88,7 @@ namespace AdaptiveCourseClient.RenderObjects
             selectedLine.StrokeThickness = 5;
 
             //Connection line moving
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.LeftButton == MouseButtonState.Pressed && ConnectionLinePolyline != null)
             {
                 Point connectionLineCoord = e.GetPosition(_canvas);
                 if ((connectionLineCoord.Y > ConnectionLinePolyline.Points[0].Y 
@@ -102,53 +106,56 @@ namespace AdaptiveCourseClient.RenderObjects
         private void ConnectionLine_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_window.IsConnectionLineSelected)
-                _window.SelectedLine.SetColor(Brushes.Black);
+                _window.SelectedLine?.SetColor(Brushes.Black);
             _window.SelectedLine = this;
             _window.IsConnectionLineSelected = true;
 
             // Connection line coloring
             Polyline selectedLine = (Polyline)sender;
             selectedLine.Stroke = Brushes.BlueViolet;
-            ConnectionLinePolyline.CaptureMouse();
+            ConnectionLinePolyline?.CaptureMouse();
         }
 
         private void ConnectionLine_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            ConnectionLinePolyline.ReleaseMouseCapture();
+            ConnectionLinePolyline?.ReleaseMouseCapture();
         }
 
         public void MoveConnectionLine(Line contact, double newX, double newY)
         {
-            double precision = 0.01;
-            Point firstConnectionPoint = ConnectionLinePolyline.Points[0];
-            Point lastConnectionPoint = ConnectionLinePolyline.Points.Last();
+            if (ConnectionLinePolyline != null)
+            {
+                double precision = 0.01;
+                Point firstConnectionPoint = ConnectionLinePolyline.Points[0];
+                Point lastConnectionPoint = ConnectionLinePolyline.Points.Last();
 
-            // Connection line direction determination
-            if (Math.Abs(firstConnectionPoint.X - contact.X1) < precision && Math.Abs(firstConnectionPoint.Y - contact.Y1) < precision)
-            {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, 
-                    newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
-            }
-            else if (Math.Abs(lastConnectionPoint.X - contact.X1) < precision && Math.Abs(lastConnectionPoint.Y - contact.Y1) < precision)
-            {
-                ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
-                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
-            }
-            else if (Math.Abs(firstConnectionPoint.X - contact.X2) < precision && Math.Abs(firstConnectionPoint.Y - contact.Y2) < precision)
-            {
-                ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points, 
-                    newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
-            }
-            else if (Math.Abs(lastConnectionPoint.X - contact.X2) < precision && Math.Abs(lastConnectionPoint.Y - contact.Y2) < precision)
-            {
-                ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()), 
-                    newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
-            }
+                // Connection line direction determination
+                if (Math.Abs(firstConnectionPoint.X - contact.X1) < precision && Math.Abs(firstConnectionPoint.Y - contact.Y1) < precision)
+                {
+                    ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points,
+                        newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
+                }
+                else if (Math.Abs(lastConnectionPoint.X - contact.X1) < precision && Math.Abs(lastConnectionPoint.Y - contact.Y1) < precision)
+                {
+                    ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()),
+                        newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
+                }
+                else if (Math.Abs(firstConnectionPoint.X - contact.X2) < precision && Math.Abs(firstConnectionPoint.Y - contact.Y2) < precision)
+                {
+                    ConnectionLinePolyline.Points = MoveConnectionLinePoints(ConnectionLinePolyline.Points,
+                        newX, newY, (lastConnectionPoint.X + newX) / 2, (lastConnectionPoint.Y + newY) / 2);
+                }
+                else if (Math.Abs(lastConnectionPoint.X - contact.X2) < precision && Math.Abs(lastConnectionPoint.Y - contact.Y2) < precision)
+                {
+                    ConnectionLinePolyline.Points = new PointCollection(MoveConnectionLinePoints(new PointCollection(ConnectionLinePolyline.Points.Reverse()),
+                        newX, newY, (firstConnectionPoint.X + newX) / 2, (firstConnectionPoint.Y + newY) / 2).Reverse());
+                }
 
-            // Update all nodes
-            RemoveNodes();
-            BeginElement.CreateNodes(this);
-            EndElement.CreateNodes(this);
+                // Update all nodes
+                RemoveNodes();
+                BeginElement?.CreateNodes(this);
+                EndElement?.CreateNodes(this);
+            }
         }
 
         private void RemoveNodes()
@@ -162,8 +169,8 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void Remove()
         {
-            BeginElement._connectionLines.Remove(this);
-            EndElement._connectionLines.Remove(this);
+            BeginElement?._connectionLines.Remove(this);
+            EndElement?._connectionLines.Remove(this);
             _canvas.Children.Remove(ConnectionLinePolyline);
             RemoveNodes();
         }

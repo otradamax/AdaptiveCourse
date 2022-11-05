@@ -7,7 +7,7 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public class IOElement : Element
     {
-        public Polygon Body;
+        public Polygon? Body;
 
         protected readonly double _contactWidth = 20;
         protected readonly double _textSize = 14;

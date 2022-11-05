@@ -12,7 +12,7 @@ namespace AdaptiveCourseClient
     public partial class MainWindow : Window
     {
         public UIElement? SelectedLogicElement { get; set; }
-        public ConnectionLine SelectedLine { get; set; }
+        public ConnectionLine? SelectedLine { get; set; }
         public bool IsConnectionLineSelected 
         { 
             get { return _isSelected; } 
@@ -33,11 +33,11 @@ namespace AdaptiveCourseClient
         }
 
         private LogicElement? _logicElement;
-        private Shape _beginningContact;
+        private Shape? _beginningContact;
         private Point _logicElementOffset;
         private List<LogicElement> _logicElements;
         private List<InputElement> _inputs;
-        private OutputElement _output;
+        private OutputElement? _output;
         private List<ConnectionLine> connectionLines;
 
         private bool _isConnectionLineBuilding = false;
@@ -87,7 +87,7 @@ namespace AdaptiveCourseClient
             {
                 InputElement input = new InputElement(bodyCanvas, _inputsNum);
                 input.AddInput(i, toolboxWidth, this.Height, _mainLeftRightMargin);
-                input.Body.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
+                input.Body!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
             }
         }
@@ -106,7 +106,7 @@ namespace AdaptiveCourseClient
                 LogicElement element = new LogicElement(bodyCanvas);
                 _logicElements.Add(element);
                 element.AddBlock();
-                element.OutputSnap.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
+                element.OutputSnap!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 element.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
             }
@@ -143,7 +143,7 @@ namespace AdaptiveCourseClient
                 }
                 if (IsConnectionLineSelected)
                 {
-                    SelectedLine.SetColor(Brushes.Black);
+                    SelectedLine?.SetColor(Brushes.Black);
                     IsConnectionLineSelected = false;
                     SelectedLine = null;
                 }
@@ -159,10 +159,10 @@ namespace AdaptiveCourseClient
             // Deleting connection line
             if (e.Key == Key.Delete)
             {
-                if (connectionLines.Contains(SelectedLine))
+                if (connectionLines.Contains(SelectedLine!))
                 {
-                    connectionLines.Remove(SelectedLine);
-                    SelectedLine.Remove();
+                    connectionLines.Remove(SelectedLine!);
+                    SelectedLine!.Remove();
                     IsConnectionLineSelected = false;
                     SelectedLine = null;
                 }
@@ -173,13 +173,13 @@ namespace AdaptiveCourseClient
         {
             foreach(LogicElement elementAND in _logicElements)
             {
-                foreach(UIElement input in elementAND.InputsSnap)
+                foreach(UIElement input in elementAND.InputsSnap!)
                 {
                     Shape inputSnap = (Ellipse)input;
                     inputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Transparent;
                 }
             }
-            Shape outnputSnap = (Polygon)_output.Body;
+            Shape outnputSnap = (Polygon)_output!.Body!;
             outnputSnap.Stroke = isEndingContactSelected ? Brushes.Red : Brushes.Black;
         }
 
@@ -209,10 +209,10 @@ namespace AdaptiveCourseClient
 
         private void AddEventsForEndingContacts()
         {
-            _output.Body.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
+            _output!.Body!.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
             foreach (LogicElement uIElement in _logicElements)
             {
-                foreach(UIElement outputSnap in uIElement.InputsSnap)
+                foreach(UIElement outputSnap in uIElement.InputsSnap!)
                 {
                     outputSnap.MouseLeftButtonUp += EndingContact_PreviewMouseLeftButtonUp;
                 }
@@ -221,10 +221,10 @@ namespace AdaptiveCourseClient
 
         private void RemoveEventsForEndingContacts()
         {
-            _output.Body.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
+            _output!.Body!.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
             foreach (LogicElement uIElement in _logicElements)
             {
-                foreach (UIElement outputSnap in uIElement.InputsSnap)
+                foreach (UIElement outputSnap in uIElement.InputsSnap!)
                 {
                     outputSnap.MouseLeftButtonUp -= EndingContact_PreviewMouseLeftButtonUp;
                 }
@@ -235,8 +235,8 @@ namespace AdaptiveCourseClient
         {
             Point firstPoint = new Point();
             Point lastPoint = new Point();
-            Element firstElement = null;
-            Element lastElement = null;
+            Element? firstElement = null;
+            Element? lastElement = null;
 
             // Connection line first and last points determination
             if (_beginningContact is Polygon)
@@ -255,7 +255,7 @@ namespace AdaptiveCourseClient
                     Canvas.GetTop(_beginningContact) + LogicElement.SnapCircleDiameter / 2);
                 foreach (LogicElement logicElement in _logicElements)
                 {
-                    if (logicElement.LogicBlock.Contains((Ellipse)_beginningContact))
+                    if (logicElement.LogicBlock!.Contains((Ellipse)_beginningContact))
                         firstElement = logicElement;
                 }
             }
@@ -272,7 +272,7 @@ namespace AdaptiveCourseClient
                     Canvas.GetTop((Ellipse)sender) + LogicElement.SnapCircleDiameter / 2);
                 foreach (LogicElement logicElement in _logicElements)
                 {
-                    if (logicElement.LogicBlock.Contains((Ellipse)sender))
+                    if (logicElement.LogicBlock!.Contains((Ellipse)sender))
                         lastElement = logicElement;
                 }
             }
@@ -308,7 +308,7 @@ namespace AdaptiveCourseClient
             // Selected logic block searching
             foreach(LogicElement logicBlock in _logicElements)
             {
-                if (logicBlock.LogicBlock.Contains(SelectedLogicElement))
+                if (logicBlock.LogicBlock!.Contains(SelectedLogicElement))
                 {
                     _logicElement = logicBlock;
                 }
@@ -320,7 +320,7 @@ namespace AdaptiveCourseClient
             // Selected logic block layer prioritization
             if (_logicElement != null)
             {
-                foreach (UIElement uIElement in _logicElement.LogicBlock)
+                foreach (UIElement uIElement in _logicElement.LogicBlock!)
                 {
                     Panel.SetZIndex(uIElement, 1);
                 }
@@ -349,7 +349,7 @@ namespace AdaptiveCourseClient
             {
                 _logicElement.Remove();
                 _logicElement.AddBlock();
-                _logicElement.OutputSnap.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
+                _logicElement.OutputSnap!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _logicElement.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
                     LogicElement_PreviewMouseLeftButtonUp);
             }

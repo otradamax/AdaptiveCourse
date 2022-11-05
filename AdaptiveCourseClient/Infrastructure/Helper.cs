@@ -22,8 +22,8 @@ namespace AdaptiveCourseClient.Infrastructure
 
         public static Point FindIntersectionPoint(ConnectionLine connectionLine1, ConnectionLine connectionLine2, bool isBegin)
         {
-            PointCollection points1 = connectionLine1.ConnectionLinePolyline.Points;
-            PointCollection points2 = connectionLine2.ConnectionLinePolyline.Points;
+            PointCollection points1 = connectionLine1.ConnectionLinePolyline!.Points;
+            PointCollection points2 = connectionLine2.ConnectionLinePolyline!.Points;
 
             if (!isBegin)
             {

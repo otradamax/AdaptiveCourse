@@ -11,7 +11,7 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         public int Xn;
         private int _inputsNum;
-        private TextBlock _textBlock;
+        private TextBlock? _textBlock;
 
         public InputElement(Canvas canvas, int inputsNum) 
             : base(canvas) 

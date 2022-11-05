@@ -5,9 +5,9 @@ namespace AdaptiveCourseClient.RenderObjects
 {
     public abstract class Element
     {
-        protected Canvas? _canvas;
+        protected Canvas _canvas;
 
-        public Element(Canvas? canvas)
+        public Element(Canvas canvas)
         {
             _canvas = canvas;
         }

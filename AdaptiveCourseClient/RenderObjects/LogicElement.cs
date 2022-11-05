@@ -76,15 +76,18 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void Remove()
         {
-            foreach(UIElement logicElementPart in LogicBlock)
+            if (LogicBlock != null)
             {
-                _canvas.Children.Remove(logicElementPart);
+                foreach (UIElement logicElementPart in LogicBlock)
+                {
+                    _canvas.Children.Remove(logicElementPart);
+                }
+                for (int i = _connectionLines.Count - 1; i >= 0; i--)
+                {
+                    _connectionLines[i].Remove();
+                }
+                _connectionLines.Clear();
             }
-            for (int i = _connectionLines.Count - 1; i >= 0; i--)
-            {
-                _connectionLines[i].Remove();
-            }
-            _connectionLines.Clear();
         }
 
         public void AddOutputSnap()
@@ -106,9 +109,9 @@ namespace AdaptiveCourseClient.RenderObjects
                 Canvas.SetLeft(leftInputSnap, _bodyInitialX - SnapCircleDiameter);
                 Canvas.SetTop(leftInputSnap, _bodyInitialY + BodyHeight * ((double)(i + 1) / (_inputsNumber + 1)) - 
                     (double)(SnapCircleDiameter / 2));
-                LogicBlock.Add(leftInputSnap);
+                LogicBlock?.Add(leftInputSnap);
                 _canvas.Children.Add(leftInputSnap);
-                this.InputsSnap.Add(leftInputSnap);
+                this.InputsSnap?.Add(leftInputSnap);
             }
         }
 
@@ -129,14 +132,20 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void AddOutputSnapColoringEvent()
         {
-            OutputSnap.MouseLeave += Output_MouseLeave;
-            OutputSnap.MouseMove += Output_MouseMove;
+            if (OutputSnap != null)
+            {
+                OutputSnap.MouseLeave += Output_MouseLeave;
+                OutputSnap.MouseMove += Output_MouseMove;
+            }
         }
 
         public void RemoveOutputSnapColoringEvent()
         {
-            OutputSnap.MouseLeave -= Output_MouseLeave;
-            OutputSnap.MouseMove -= Output_MouseMove;
+            if (OutputSnap != null)
+            {
+                OutputSnap.MouseLeave -= Output_MouseLeave;
+                OutputSnap.MouseMove -= Output_MouseMove;
+            }
         }
 
         private void Output_MouseLeave(object sender, MouseEventArgs e)
@@ -158,9 +167,12 @@ namespace AdaptiveCourseClient.RenderObjects
         public void MoveLogicBlockEvents(MouseButtonEventHandler LogicElementAND_PreviewMouseLeftButtonDown,
             MouseEventHandler LogicElement_PreviewMouseMove, MouseButtonEventHandler LogicElement_PreviewMouseLeftButtonUp)
         {
-            _body.PreviewMouseLeftButtonDown += LogicElementAND_PreviewMouseLeftButtonDown;
-            _body.PreviewMouseMove += LogicElement_PreviewMouseMove;
-            _body.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
+            if (_body != null)
+            {
+                _body.PreviewMouseLeftButtonDown += LogicElementAND_PreviewMouseLeftButtonDown;
+                _body.PreviewMouseMove += LogicElement_PreviewMouseMove;
+                _body.PreviewMouseLeftButtonUp += LogicElement_PreviewMouseLeftButtonUp;
+            }
         }
 
         private void AddPositiveOutput(Ellipse rightEllipse)
@@ -181,9 +193,12 @@ namespace AdaptiveCourseClient.RenderObjects
             LogicBlock?.Add(circle);
             _negativeOutputCircle = circle;
             _canvas?.Children.Add(circle);
-            foreach (UIElement uIElement in LogicBlock)
+            if (LogicBlock != null)
             {
-                Panel.SetZIndex(uIElement, 0);
+                foreach (UIElement uIElement in LogicBlock)
+                {
+                    Panel.SetZIndex(uIElement, 0);
+                }
             }
         }
 
@@ -216,7 +231,7 @@ namespace AdaptiveCourseClient.RenderObjects
                 foreach (ConnectionLine _connectionLine in _connectionLines)
                 {
                     if (_connectionLine.EndElement == this && _connectionLine != connectionLine
-                        && _connectionLine.ConnectionLinePolyline.Points.Last().Equals(connectionLine.ConnectionLinePolyline.Points.Last(), 0.001))
+                        && _connectionLine.ConnectionLinePolyline!.Points.Last().Equals(connectionLine.ConnectionLinePolyline!.Points.Last(), 0.001))
                     {
                         Point intersectPoint = Helper.FindIntersectionPoint(connectionLine, _connectionLine, false);
                         if (intersectPoint.X != 0 && intersectPoint.Y != 0)
@@ -233,36 +248,39 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void MoveLogicElement(Point cursorPosition, Point _logicElementOffset)
         {
-            double bodyX = Canvas.GetLeft(LogicBlock[0]);
-            double bodyY = Canvas.GetTop(LogicBlock[0]);
-            foreach (UIElement uIElement in LogicBlock)
+            if (LogicBlock != null)
             {
-                double Y = cursorPosition.Y - _logicElementOffset.Y - bodyY;
-                double X = cursorPosition.X - _logicElementOffset.X - bodyX;
+                double bodyX = Canvas.GetLeft(LogicBlock[0]);
+                double bodyY = Canvas.GetTop(LogicBlock[0]);
+                foreach (UIElement uIElement in LogicBlock)
+                {
+                    double Y = cursorPosition.Y - _logicElementOffset.Y - bodyY;
+                    double X = cursorPosition.X - _logicElementOffset.X - bodyX;
 
-                // it is an another way of line coordinates determination
-                if (uIElement is Line)
-                {
-                    Line contact = (Line)uIElement;
-                    double contactX = contact.X1;
-                    double contactY = contact.Y1;
-                    Y += contactY;
-                    X += contactX;
-                    foreach (ConnectionLine connectionLine in _connectionLines)
-                        connectionLine.MoveConnectionLine(contact, X, Y);
-                    contact.X1 = X;
-                    contact.Y1 = Y;
-                    contact.X2 = X + LogicElement.OutputCircleDiameter / 2;
-                    contact.Y2 = Y;
-                }
-                else
-                {
-                    double positionX = Canvas.GetLeft(uIElement);
-                    double positionY = Canvas.GetTop(uIElement);
-                    Y += positionY;
-                    X += positionX;
-                    Canvas.SetTop(uIElement, Y);
-                    Canvas.SetLeft(uIElement, X);
+                    // it is an another way of line coordinates determination
+                    if (uIElement is Line)
+                    {
+                        Line contact = (Line)uIElement;
+                        double contactX = contact.X1;
+                        double contactY = contact.Y1;
+                        Y += contactY;
+                        X += contactX;
+                        foreach (ConnectionLine connectionLine in _connectionLines)
+                            connectionLine.MoveConnectionLine(contact, X, Y);
+                        contact.X1 = X;
+                        contact.Y1 = Y;
+                        contact.X2 = X + LogicElement.OutputCircleDiameter / 2;
+                        contact.Y2 = Y;
+                    }
+                    else
+                    {
+                        double positionX = Canvas.GetLeft(uIElement);
+                        double positionY = Canvas.GetTop(uIElement);
+                        Y += positionY;
+                        X += positionX;
+                        Canvas.SetTop(uIElement, Y);
+                        Canvas.SetLeft(uIElement, X);
+                    }
                 }
             }
         }
