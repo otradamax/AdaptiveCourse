@@ -93,6 +93,7 @@ namespace AdaptiveCourseClient.RenderObjects
             }
             int serialNumber = 0;
             int.TryParse(Name.Substring("AND".Length), out serialNumber);
+            Graph.RemoveNode(Name);
             return serialNumber;
         }
 

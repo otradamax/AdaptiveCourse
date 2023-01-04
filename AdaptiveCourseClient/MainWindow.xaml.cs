@@ -1,11 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Reflection.Metadata;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using AdaptiveCourseClient.Infrastructure;
 using AdaptiveCourseClient.RenderObjects;
+using Newtonsoft.Json;
 
 namespace AdaptiveCourseClient
 {
@@ -50,6 +59,8 @@ namespace AdaptiveCourseClient
         private static double _mainLeftRightMargin;
         private static double _mainTopBottomMargin;
 
+        private static string Token = String.Empty;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -62,20 +73,57 @@ namespace AdaptiveCourseClient
             _inputs = new List<InputElement>();
             connectionLines = new List<ConnectionLine>();
 
+            btnCheckScheme.PreviewMouseLeftButtonUp += BtnCheckScheme_PreviewMouseLeftButtonUp;
+
             CreateBlocks();
+        }
+
+        private async void BtnCheckScheme_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            await GetLogicScheme();
+        }
+
+        private async Task GetLogicScheme()
+        {
+            HttpClient httpClient = new HttpClient();
+            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7133/Home/LogicScheme"))
+            {
+                var json = JsonConvert.SerializeObject(Graph.OrientedGraph);
+                request.Headers.Add("Accept", "application/json");
+                request.Headers.Add("Authorization", "Bearer " + Token);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await httpClient.SendAsync(request);
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    AuthorizationWindow authorizationWindow = new AuthorizationWindow();
+                    authorizationWindow.ShowDialog();
+                    Token = authorizationWindow.Token;
+                    if (Token != String.Empty)
+                    {
+                        await GetLogicScheme();
+                    }
+                }
+                else
+                {
+                    string result = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show(result, "Результат", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             double mainWidth = bodyCanvas.ActualWidth * 4 / 5;
             double toolboxWidth = bodyCanvas.ActualWidth / 5;
+            double toolboxHeight = bodyCanvas.ActualHeight;
 
             column0.Width = new GridLength(toolboxWidth, GridUnitType.Pixel);
             column1.Width = new GridLength(mainWidth, GridUnitType.Pixel);
-            row.Height = new GridLength(bodyCanvas.ActualHeight, GridUnitType.Pixel);
+            row0.Height = new GridLength(btnCheckScheme.ActualHeight, GridUnitType.Pixel);
+            row1.Height = new GridLength(toolboxHeight, GridUnitType.Pixel);
 
             _mainLeftRightMargin = mainWidth / 20;
-            _mainTopBottomMargin = Main.ActualHeight / 10;
+            _mainTopBottomMargin = toolboxHeight / 10;
             Main.Margin = new Thickness(_mainLeftRightMargin, _mainTopBottomMargin, _mainLeftRightMargin, _mainTopBottomMargin);
             CreateInputs(toolboxWidth);
             CreateOutput();
@@ -86,7 +134,7 @@ namespace AdaptiveCourseClient
             for (int i = 0; i < _inputsNum; i++)
             {
                 InputElement input = new InputElement(bodyCanvas, _inputsNum);
-                input.AddInput(i, toolboxWidth, this.Height, _mainLeftRightMargin);
+                input.AddInput(i, toolboxWidth, bodyCanvas.ActualHeight, _mainLeftRightMargin);
                 input.Body!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
             }
@@ -334,7 +382,7 @@ namespace AdaptiveCourseClient
                 return;
 
             // Logic element movement
-            Point cursorPosition = e.GetPosition(sender as Canvas);
+            Point cursorPosition = e.GetPosition(bodyCanvas);
 
             _logicElement.MoveLogicElement(cursorPosition, _logicElementOffset);
         }

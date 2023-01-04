@@ -12,8 +12,10 @@ namespace AdaptiveCourseClient.Infrastructure
 
         public static void AddNode(string nodeName) => OrientedGraph.Add(nodeName, new List<string>());
 
-        public static void AddEdge(string startNodeName, string finishNodeName) => OrientedGraph[startNodeName].Add(finishNodeName);
+        public static void RemoveNode(string nodeName) => OrientedGraph.Remove(nodeName);
 
-        public static void RemoveEdge(string startNodeName, string finishNodeName) => OrientedGraph[startNodeName].Remove(finishNodeName);
+        public static void AddEdge(string startNodeName, string finishNodeName) => OrientedGraph[finishNodeName].Add(startNodeName);
+
+        public static void RemoveEdge(string startNodeName, string finishNodeName) => OrientedGraph[finishNodeName].Remove(startNodeName);
     }
 }

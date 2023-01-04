@@ -7,7 +7,6 @@
         mc:Ignorable="d"
         KeyDown="Canvas_PreviewKeyDown"
         WindowState="Maximized"
-        ResizeMode="NoResize"
         Title="MainWindow">
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Grid>
@@ -17,14 +16,17 @@
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" x:Name="row"/>
+                <RowDefinition Height="*" x:Name="row0"/>
+                <RowDefinition Height="10*" x:Name="row1"/>
             </Grid.RowDefinitions>
 
-            <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.ColumnSpan="2"/>
+            <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.ColumnSpan="2" Grid.Row="1"/>
 
-            <Rectangle x:Name="Toolbox" Grid.Column="0" Fill="Wheat" Panel.ZIndex="-1"/>
+            <Button x:Name="btnCheckScheme" Grid.ColumnSpan="2" Background="AliceBlue" Content="Проверить" Grid.Row="0" FontSize="20" Cursor="Hand"/>
+
+            <Rectangle x:Name="Toolbox" Grid.Column="0" Fill="Wheat" Panel.ZIndex="-1" Grid.Row="1"/>
             <Rectangle x:Name="Main" Grid.Column="1" Fill="#8BD7F9"
-                       RadiusX="20" RadiusY="20" Panel.ZIndex="-1"/>
+                       RadiusX="20" RadiusY="20" Panel.ZIndex="-1" Grid.Row="1"/>
         </Grid>
     </ScrollViewer>
 </Window>

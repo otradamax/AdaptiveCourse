@@ -42,7 +42,7 @@ namespace AdaptiveCourseClient.Infrastructure
         {
             Rectangle rectangle = new Rectangle();
             ImageBrush imgBrush = new ImageBrush();
-            imgBrush.ImageSource = new BitmapImage(new Uri(@"../../../../images/and.png", UriKind.Relative));
+            imgBrush.ImageSource = new BitmapImage(new Uri(@"../../../images/and.png", UriKind.Relative));
             rectangle.Width = bodyWidth;
             rectangle.Height = bodyHeight;
             rectangle.RadiusX = 5;
