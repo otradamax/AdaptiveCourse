@@ -7,7 +7,7 @@ namespace AdaptiveCourseClient.Infrastructure
 {
     public static class Figures
     {
-        public static Ellipse AddOutputCircle(int outputCircleDiameter)
+        public static Ellipse AddNegativeCircle(int outputCircleDiameter)
         {
             Ellipse Circle = new Ellipse();
             Circle.Width = outputCircleDiameter;
@@ -18,7 +18,7 @@ namespace AdaptiveCourseClient.Infrastructure
             return Circle;
         }
 
-        public static Ellipse AddInputSnapCircle(int snapCircleDiameter)
+        public static Ellipse AddSnapCircle(int snapCircleDiameter)
         {
             Ellipse Circle = new Ellipse();
             Circle.Width = snapCircleDiameter;

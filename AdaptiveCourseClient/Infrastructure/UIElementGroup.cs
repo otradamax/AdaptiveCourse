@@ -29,6 +29,11 @@ namespace AdaptiveCourseClient.Infrastructure
                 uIElements.Remove(uIElement);
         }
 
+        public void Clear()
+        {
+            uIElements.Clear();
+        }
+
         public void Replace(UIElement uIElementRemove, UIElement uIElementAdd)
         {
             if (uIElements.Contains(uIElementRemove))

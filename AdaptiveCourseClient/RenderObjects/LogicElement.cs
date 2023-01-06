@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,18 +16,21 @@ namespace AdaptiveCourseClient.RenderObjects
         public Ellipse? OutputSnap { get; set; }
         public UIElementGroup? InputsSnap { get; set; }
 
-        private Rectangle? _body;
-        private Shape? _negativeOutputCircle;
+        public UIElement Output { get; set; }
+        public UIElementGroup? Inputs { get; set; }
 
-        public static readonly int OutputCircleDiameter = 24;
+        private Rectangle? _body;
+        private Shape? _negativeOutputCircle;        private List<Shape> _negativeInputsCircle;
+
+        public static readonly int NegativeCircleDiameter = 24;
         public static readonly int SnapCircleDiameter = 24;
         public static readonly int ContactWidth = 12;
         public readonly int BodyWidth = 70;
-        public readonly int BodyHeight = 100;
+        public int BodyHeight = 100;
 
-        private static readonly int _bodyInitialX = 100;
-        private static readonly int _bodyInitialY = 50;
-        private static readonly int _inputsNumber = 2;
+        private readonly int _bodyInitialX = 100;
+        private readonly int _bodyInitialY = 50;
+        private int _inputsNumber = 2;
 
         public LogicElement(Canvas canvas) : base(canvas)
         {
@@ -37,38 +41,20 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             LogicBlock = new UIElementGroup();
             InputsSnap = new UIElementGroup();
+            Inputs = new UIElementGroup();
 
             // Main body creation
             _body = Figures.AddBody(BodyWidth, BodyHeight);
-            _body.PreviewMouseDown += Body_PreviewMouseDown;
             Canvas.SetLeft(_body, _bodyInitialX);
             Canvas.SetTop(_body, _bodyInitialY);
             LogicBlock.Add(_body);
             _canvas.Children.Add(_body);
+            _body.PreviewMouseLeftButtonDown += _body_PreviewMouseLeftButtonDown;
+            _body.PreviewMouseRightButtonDown += _body_PreviewMouseRightButtonDown;
 
-            // Inputs creation
-            for (int i = 0; i < _inputsNumber; i++)
-            {
-                double relativeInputY = BodyHeight * ((double)(i + 1) / (_inputsNumber + 1));
-                Line leftInputLine = Figures.AddContact();
-                leftInputLine.X1 = _bodyInitialX - ContactWidth;
-                leftInputLine.Y1 = _bodyInitialY + (relativeInputY);
-                leftInputLine.X2 = _bodyInitialX;
-                leftInputLine.Y2 = _bodyInitialY + (relativeInputY);
-                LogicBlock.Add(leftInputLine);
-                _canvas.Children.Add(leftInputLine);
-            }
-
-            // Output creation
-            Line rightLine = Figures.AddContact();
-            rightLine.X1 = _bodyInitialX + BodyWidth;
-            rightLine.Y1 = _bodyInitialY + ((double)BodyHeight / 2);
-            rightLine.X2 = _bodyInitialX + BodyWidth + ContactWidth;
-            rightLine.Y2 = _bodyInitialY + ((double)BodyHeight / 2);
-            LogicBlock.Add(rightLine);
-            _canvas.Children.Add(rightLine);
-            _negativeOutputCircle = null;
-
+            AddInputs();
+            AddOutput();
+            
             AddOutputSnap();
             AddInputsSnap();
             AddOutputSnapColoringEvent();
@@ -97,43 +83,93 @@ namespace AdaptiveCourseClient.RenderObjects
             return serialNumber;
         }
 
-        public void AddOutputSnap()
+        private void RemoveContactsAndSnaps()
         {
-            Ellipse rightInputSnap = Figures.AddInputSnapCircle(SnapCircleDiameter);
-            Canvas.SetLeft(rightInputSnap, _bodyInitialX + BodyWidth);
-            Canvas.SetTop(rightInputSnap, _bodyInitialY + (double)(BodyHeight / 2) -
+            foreach (UIElement contact in Inputs)
+            {
+                _canvas.Children.Remove(contact);
+                LogicBlock?.Remove(contact);
+            }
+            Inputs.Clear();
+            foreach (UIElement contactSnap in InputsSnap)
+            {
+                _canvas.Children.Remove(contactSnap);
+                LogicBlock?.Remove(contactSnap);
+            }
+            InputsSnap.Clear();
+
+            _canvas.Children.Remove(Output);
+            LogicBlock?.Remove(Output);
+            Output = null;
+
+            _canvas.Children.Remove(OutputSnap);
+            LogicBlock?.Remove(OutputSnap);
+            OutputSnap = null;
+        }
+
+        private void AddOutput()
+        {
+            double bodyX = Canvas.GetLeft(_body);
+            double bodyY = Canvas.GetTop(_body);
+            Line rightLine = Figures.AddContact();
+            rightLine.X1 = bodyX + BodyWidth;
+            rightLine.Y1 = bodyY + ((double)BodyHeight / 2);
+            rightLine.X2 = bodyX + BodyWidth + ContactWidth;
+            rightLine.Y2 = bodyY + ((double)BodyHeight / 2);
+            LogicBlock.Add(rightLine);
+            _canvas.Children.Add(rightLine);
+            Output = rightLine;
+            _negativeOutputCircle = null;
+        }
+
+        private void AddInputs()
+        {
+            double bodyX = Canvas.GetLeft(_body);
+            double bodyY = Canvas.GetTop(_body);
+            for (int i = 0; i < _inputsNumber; i++)
+            {
+                double relativeInputY = BodyHeight * ((double)(i + 1) / (_inputsNumber + 1));
+                Line leftInputLine = Figures.AddContact();
+                leftInputLine.X1 = bodyX - ContactWidth;
+                leftInputLine.Y1 = bodyY + (relativeInputY);
+                leftInputLine.X2 = bodyX;
+                leftInputLine.Y2 = bodyY + (relativeInputY);
+                LogicBlock.Add(leftInputLine);
+                _canvas.Children.Add(leftInputLine);
+                Inputs.Add(leftInputLine);
+            }
+            _negativeInputsCircle = new List<Shape>(new Shape[_inputsNumber]);
+        }
+
+        private void AddOutputSnap()
+        {
+            double bodyX = Canvas.GetLeft(_body);
+            double bodyY = Canvas.GetTop(_body);
+            Ellipse rightInputSnap = Figures.AddSnapCircle(SnapCircleDiameter);
+            Canvas.SetLeft(rightInputSnap, bodyX + BodyWidth);
+            Canvas.SetTop(rightInputSnap, bodyY + (double)(BodyHeight / 2) -
                 (double)(SnapCircleDiameter / 2));
             LogicBlock?.Add(rightInputSnap);
             _canvas.Children.Add(rightInputSnap);
-            this.OutputSnap = rightInputSnap;
+            rightInputSnap.PreviewMouseLeftButtonDown += OutputSnap_PreviewMouseLeftButtonDown;
+            OutputSnap = rightInputSnap;
         }
 
-        public void AddInputsSnap()
+        private void AddInputsSnap()
         {
-            for(int i = 0; i < _inputsNumber; i++)
+            double bodyX = Canvas.GetLeft(_body);
+            double bodyY = Canvas.GetTop(_body);
+            for (int i = 0; i < _inputsNumber; i++)
             {
-                Ellipse leftInputSnap = Figures.AddInputSnapCircle(SnapCircleDiameter);
-                Canvas.SetLeft(leftInputSnap, _bodyInitialX - SnapCircleDiameter);
-                Canvas.SetTop(leftInputSnap, _bodyInitialY + BodyHeight * ((double)(i + 1) / (_inputsNumber + 1)) - 
+                Ellipse leftInputSnap = Figures.AddSnapCircle(SnapCircleDiameter);
+                Canvas.SetLeft(leftInputSnap, bodyX - SnapCircleDiameter);
+                Canvas.SetTop(leftInputSnap, bodyY + BodyHeight * ((double)(i + 1) / (_inputsNumber + 1)) - 
                     (double)(SnapCircleDiameter / 2));
                 LogicBlock?.Add(leftInputSnap);
                 _canvas.Children.Add(leftInputSnap);
-                this.InputsSnap?.Add(leftInputSnap);
-            }
-        }
-
-        private void Body_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ClickCount >= 2)
-            {
-                if (_negativeOutputCircle != null)
-                {
-                    AddPositiveOutput((Ellipse)_negativeOutputCircle);
-                }
-                else
-                {
-                    AddNegativeOutput();
-                }
+                leftInputSnap.Name = "input" + i.ToString();
+                leftInputSnap.PreviewMouseLeftButtonDown += InputSnap_PreviewMouseLeftButtonDown;
+                InputsSnap?.Add(leftInputSnap);
             }
         }
 
@@ -182,6 +218,113 @@ namespace AdaptiveCourseClient.RenderObjects
             }
         }
 
+        private void _body_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount >= 2)
+            {
+                IncreaseInputsNumber();
+            }
+        }
+
+        private void IncreaseInputsNumber()
+        {
+            if (_inputsNumber < 10)
+            {
+                _inputsNumber++;
+                RemoveContactsAndSnaps();
+                _body.Height += 10;
+                BodyHeight += 10;
+                AddInputs();
+                AddOutput();
+                AddInputsSnap();
+                AddOutputSnap();
+            }
+        }
+
+        private void _body_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount >= 2)
+            {
+                DecreaseInputsNumber();
+            }
+        }
+
+        private void DecreaseInputsNumber()
+        {
+            if (_inputsNumber > 2)
+            {
+                _inputsNumber--;
+                RemoveContactsAndSnaps();
+                _body.Height -= 10;
+                BodyHeight -= 10;
+                AddInputs();
+                AddOutput();
+                AddInputsSnap();
+                AddOutputSnap();
+            }
+        }
+
+        private void InputSnap_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount >= 2)
+            {
+                Ellipse chosenEllipse = (Ellipse)sender;
+                int serialNumber = Convert.ToInt32(chosenEllipse.Name.Replace("input", ""));
+                if (_negativeInputsCircle[serialNumber] != null)
+                {
+                    AddPositiveInput((Ellipse)_negativeInputsCircle[serialNumber], serialNumber);
+                }
+                else
+                {
+                    AddNegativeInput(serialNumber);
+                }
+            }
+        }
+
+        private void AddPositiveInput(Ellipse rightEllipse, int serialNumber)
+        {
+            _canvas?.Children.Remove(rightEllipse);
+            LogicBlock?.Remove(rightEllipse);
+            _negativeInputsCircle[serialNumber] = null;
+        }
+
+        private void AddNegativeInput(int serialNumber)
+        {
+            double outputX = Canvas.GetLeft(_body);
+            double outputY = Canvas.GetTop(_body) + (Convert.ToDouble(BodyHeight * (serialNumber + 1)) / (_inputsNumber + 1));
+            Ellipse circle = Figures.AddNegativeCircle(NegativeCircleDiameter);
+            Canvas.SetTop(circle, outputY - NegativeCircleDiameter / 2);
+            Canvas.SetLeft(circle, outputX - NegativeCircleDiameter * 1 / 3);
+
+            LogicBlock?.Add(circle);
+            circle.PreviewMouseLeftButtonDown += InputSnap_PreviewMouseLeftButtonDown;
+            _negativeInputsCircle[(int)serialNumber] = circle;
+            _canvas?.Children.Add(circle);
+            circle.Name = "input" + serialNumber.ToString();
+            if (LogicBlock != null)
+            {
+                foreach (UIElement uIElement in LogicBlock)
+                {
+                    Panel.SetZIndex(uIElement, 0);
+                }
+            }
+        }
+
+        private void OutputSnap_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount >= 2)
+            {
+                if (_negativeOutputCircle != null)
+                {
+                    AddPositiveOutput((Ellipse)_negativeOutputCircle);
+                }
+                else
+                {
+                    AddNegativeOutput();
+                }
+            }
+        }
+
         private void AddPositiveOutput(Ellipse rightEllipse)
         {
             _canvas?.Children.Remove(rightEllipse);
@@ -193,11 +336,12 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             double outputX = Canvas.GetLeft(_body) + BodyWidth;
             double outputY = Canvas.GetTop(_body) + ((double)BodyHeight / 2);
-            Ellipse circle = Figures.AddOutputCircle(OutputCircleDiameter);
-            Canvas.SetTop(circle, outputY - OutputCircleDiameter / 2);
-            Canvas.SetLeft(circle, outputX - OutputCircleDiameter * 2 / 3);
+            Ellipse circle = Figures.AddNegativeCircle(NegativeCircleDiameter);
+            Canvas.SetTop(circle, outputY - NegativeCircleDiameter / 2);
+            Canvas.SetLeft(circle, outputX - NegativeCircleDiameter * 2 / 3);
 
             LogicBlock?.Add(circle);
+            circle.PreviewMouseLeftButtonDown +=OutputSnap_PreviewMouseLeftButtonDown;
             _negativeOutputCircle = circle;
             _canvas?.Children.Add(circle);
             if (LogicBlock != null)
@@ -276,7 +420,7 @@ namespace AdaptiveCourseClient.RenderObjects
                             connectionLine.MoveConnectionLine(contact, X, Y);
                         contact.X1 = X;
                         contact.Y1 = Y;
-                        contact.X2 = X + LogicElement.OutputCircleDiameter / 2;
+                        contact.X2 = X + LogicElement.NegativeCircleDiameter / 2;
                         contact.Y2 = Y;
                     }
                     else

@@ -22,7 +22,7 @@
 
             <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.ColumnSpan="2" Grid.Row="1"/>
 
-            <Button x:Name="btnCheckScheme" Grid.ColumnSpan="2" Background="AliceBlue" Content="Проверить" Grid.Row="0" FontSize="20" Cursor="Hand"/>
+            <Button x:Name="btnCheckScheme" Grid.ColumnSpan="2" Background="CornflowerBlue" Content="Проверить" Grid.Row="0" FontSize="20" Cursor="Hand" Foreground="AntiqueWhite"/>
 
             <Rectangle x:Name="Toolbox" Grid.Column="0" Fill="Wheat" Panel.ZIndex="-1" Grid.Row="1"/>
             <Rectangle x:Name="Main" Grid.Column="1" Fill="#8BD7F9"
