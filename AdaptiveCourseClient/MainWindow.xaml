@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         KeyDown="Canvas_PreviewKeyDown"
         WindowState="Maximized"
-        Title="MainWindow">
+        Title="MicroTrainer">
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>

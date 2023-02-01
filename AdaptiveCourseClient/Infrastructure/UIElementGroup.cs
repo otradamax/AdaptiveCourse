@@ -6,6 +6,8 @@ namespace AdaptiveCourseClient.Infrastructure
 {
     public class UIElementGroup : IEnumerable
     {
+        public int Count { get { return uIElements.Count; } }
+
         private List<UIElement> uIElements { get; set; }
 
         public UIElementGroup()

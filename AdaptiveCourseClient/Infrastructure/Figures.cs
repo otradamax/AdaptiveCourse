@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -7,6 +9,8 @@ namespace AdaptiveCourseClient.Infrastructure
 {
     public static class Figures
     {
+        private static int _textSize = 25;
+
         public static Ellipse AddNegativeCircle(int outputCircleDiameter)
         {
             Ellipse Circle = new Ellipse();
@@ -38,16 +42,24 @@ namespace AdaptiveCourseClient.Infrastructure
             return line;
         }
 
+        public static TextBlock AddSignature(string logicBlockName)
+        {
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = logicBlockName;
+            textBlock.FontWeight = FontWeights.DemiBold;
+            textBlock.FontSize = _textSize;
+            textBlock.FontStyle = FontStyles.Italic;
+            return textBlock;
+        }
+
         public static Rectangle AddBody(int bodyWidth, int bodyHeight)
         {
             Rectangle rectangle = new Rectangle();
-            ImageBrush imgBrush = new ImageBrush();
-            imgBrush.ImageSource = new BitmapImage(new Uri(@"../../../images/and.png", UriKind.Relative));
             rectangle.Width = bodyWidth;
             rectangle.Height = bodyHeight;
             rectangle.RadiusX = 5;
             rectangle.RadiusY = 5;
-            rectangle.Fill = imgBrush;
+            rectangle.Fill = Brushes.White;
             rectangle.Stroke = Brushes.Black;
             rectangle.StrokeThickness = 3;
             return rectangle;

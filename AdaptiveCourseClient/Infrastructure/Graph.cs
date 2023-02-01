@@ -17,5 +17,17 @@ namespace AdaptiveCourseClient.Infrastructure
         public static void AddEdge(string startNodeName, string finishNodeName) => OrientedGraph[finishNodeName].Add(startNodeName);
 
         public static void RemoveEdge(string startNodeName, string finishNodeName) => OrientedGraph[finishNodeName].Remove(startNodeName);
+
+        public static void AddNegationNode(string startNodeName, string finishNodeName)
+        {
+            RemoveEdge(startNodeName, finishNodeName);
+            AddEdge(startNodeName + " NOT", finishNodeName);
+        }
+
+        public static void RemoveNegationNode(string startNodeName, string finishNodeName)
+        {
+            RemoveEdge(startNodeName, finishNodeName);
+            AddEdge(startNodeName.Replace(" NOT", ""), finishNodeName);
+        }
     }
 }

@@ -53,7 +53,9 @@ namespace AdaptiveCourseClient
         private bool _isStepEnds = true;
         private bool _isSelected = false;
 
-        private static readonly int _logicElementNum = 3;
+        private List<string> _renderedBlocks = new List<string>() { "OR", "AND" };
+
+        private static readonly int _logicElementNum = 10;
         private static readonly int _inputsNum = 4;
 
         private static double _mainLeftRightMargin;
@@ -76,6 +78,9 @@ namespace AdaptiveCourseClient
             btnCheckScheme.PreviewMouseLeftButtonUp += BtnCheckScheme_PreviewMouseLeftButtonUp;
 
             CreateBlocks();
+
+            //TableWindow tableWindow = new TableWindow();
+            //tableWindow.ShowDialog();
         }
 
         private async void BtnCheckScheme_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -149,14 +154,16 @@ namespace AdaptiveCourseClient
 
         private void CreateBlocks()
         {
-            for (int i = 0; i < _logicElementNum; i++)
+            for (int i = 0; i < _renderedBlocks.Count; i++)
             {
-                LogicElement element = new LogicElement(bodyCanvas);
-                _logicElements.Add(element);
-                element.AddBlock(i);
-                element.OutputSnap!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
-                element.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
-                    LogicElement_PreviewMouseLeftButtonUp);
+                for (int j = 0; j < _logicElementNum; j++)
+                {
+                    LogicElement element = new LogicElement(bodyCanvas, BeginningContact_PreviewMouseLeftButtonDown, _renderedBlocks[i], i);
+                    _logicElements.Add(element);
+                    element.AddBlock(j);
+                    element.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
+                        LogicElement_PreviewMouseLeftButtonUp);
+                }
             }
         }
 
@@ -402,6 +409,13 @@ namespace AdaptiveCourseClient
                     LogicElement_PreviewMouseLeftButtonUp);
             }
 
+            if (_logicElement != null)
+            {
+                foreach (UIElement uIElement in _logicElement.LogicBlock!)
+                {
+                    Panel.SetZIndex(uIElement, 0);
+                }
+            }
             SelectedLogicElement?.ReleaseMouseCapture();
             SelectedLogicElement = null;
             _logicElement = null;

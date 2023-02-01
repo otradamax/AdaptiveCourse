@@ -30,6 +30,28 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             Polyline connectionLine = Figures.AddConnectionLine();
 
+            SetConnectionLinePoints(connectionLine, firstPoint, lastPoint);
+
+            connectionLine.MouseMove += ConnectionLine_MouseMove;
+            connectionLine.MouseLeave += ConnectionLine_MouseLeave;
+            connectionLine.PreviewMouseLeftButtonDown += ConnectionLine_PreviewMouseLeftButtonDown;
+            connectionLine.PreviewMouseLeftButtonUp += ConnectionLine_PreviewMouseLeftButtonUp;
+
+            _canvas.Children.Add(connectionLine);
+            ConnectionLinePolyline = connectionLine;
+
+            firstElement!.MakeConnection(this);
+            BeginElement = firstElement;
+            firstElement.CreateNodes(this);
+            lastElement!.MakeConnection(this);
+            EndElement = lastElement;
+            lastElement.CreateNodes(this);
+
+            Graph.AddEdge(firstElement.Name, lastElement.Name);
+        }
+
+        public void SetConnectionLinePoints(Polyline connectionLine, Point firstPoint, Point lastPoint)
+        {
             PointCollection points = new PointCollection();
             points.Add(firstPoint);
 
@@ -51,22 +73,6 @@ namespace AdaptiveCourseClient.RenderObjects
             points.Add(lastPoint);
 
             connectionLine.Points = points;
-            connectionLine.MouseMove += ConnectionLine_MouseMove;
-            connectionLine.MouseLeave += ConnectionLine_MouseLeave;
-            connectionLine.PreviewMouseLeftButtonDown += ConnectionLine_PreviewMouseLeftButtonDown;
-            connectionLine.PreviewMouseLeftButtonUp += ConnectionLine_PreviewMouseLeftButtonUp;
-
-            _canvas.Children.Add(connectionLine);
-            ConnectionLinePolyline = connectionLine;
-
-            firstElement!.MakeConnection(this);
-            BeginElement = firstElement;
-            firstElement.CreateNodes(this);
-            lastElement!.MakeConnection(this);
-            EndElement = lastElement;
-            lastElement.CreateNodes(this);
-
-            Graph.AddEdge(firstElement.Name, lastElement.Name);
         }
 
         public void AddNode(Node node) => _nodes.Add(node);
