@@ -55,7 +55,7 @@ namespace AdaptiveCourseClient
 
         private List<string> _renderedBlocks = new List<string>() { "OR", "AND" };
 
-        private static readonly int _logicElementNum = 10;
+        private static readonly int _logicElementNum = 2;
         private static readonly int _inputsNum = 4;
 
         private static double _mainLeftRightMargin;
@@ -85,7 +85,8 @@ namespace AdaptiveCourseClient
 
         private async void BtnCheckScheme_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            await GetLogicScheme();
+            var a = Graph.OrientedGraph;
+            //await GetLogicScheme();
         }
 
         private async Task GetLogicScheme()

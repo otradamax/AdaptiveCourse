@@ -15,6 +15,7 @@ namespace AdaptiveCourseClient.RenderObjects
         public Polyline? ConnectionLinePolyline { get; set; }
         public Element? BeginElement { get; set; }
         public Element? EndElement { get; set; }
+        public int NegativeCount { get; set; } = 0;
 
         private MainWindow _window;
         private Canvas _canvas;
@@ -47,7 +48,12 @@ namespace AdaptiveCourseClient.RenderObjects
             EndElement = lastElement;
             lastElement.CreateNodes(this);
 
-            Graph.AddEdge(firstElement.Name, lastElement.Name);
+            if (firstElement.HasNegationOnContact(firstPoint))
+                NegativeCount++;
+            if (lastElement.HasNegationOnContact(lastPoint))
+                NegativeCount++;
+
+            Graph.AddEdge(firstElement.Name, lastElement.Name, NegativeCount);
         }
 
         public void SetConnectionLinePoints(Polyline connectionLine, Point firstPoint, Point lastPoint)
@@ -177,7 +183,7 @@ namespace AdaptiveCourseClient.RenderObjects
 
         public void Remove()
         {
-            Graph.RemoveEdge(BeginElement!.Name, EndElement!.Name);
+            Graph.RemoveEdge(BeginElement!.Name, EndElement!.Name, NegativeCount);
             BeginElement?._connectionLines.Remove(this);
             EndElement?._connectionLines.Remove(this);
             _canvas.Children.Remove(ConnectionLinePolyline);

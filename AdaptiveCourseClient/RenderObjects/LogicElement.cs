@@ -442,6 +442,9 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private void AddPositiveInput(Ellipse rightEllipse, int serialNumber)
         {
+            double outputX = Canvas.GetLeft(_body);
+            double outputY = Canvas.GetTop(_body) + (Convert.ToDouble(BodyHeight * (serialNumber + 1)) / (_inputsNumber + 1));
+            NegationToGraph(true, false, outputX, outputY);
             _canvas?.Children.Remove(rightEllipse);
             LogicBlock?.Remove(rightEllipse);
             _negativeInputsCircle[serialNumber] = null;
@@ -455,6 +458,7 @@ namespace AdaptiveCourseClient.RenderObjects
             Canvas.SetTop(circle, outputY - _negativeCircleDiameter / 2);
             Canvas.SetLeft(circle, outputX - _negativeCircleDiameter * 1 / 3);
 
+            NegationToGraph(true, true, outputX, outputY);
             LogicBlock?.Add(circle);
             circle.PreviewMouseLeftButtonDown += InputSnap_PreviewMouseLeftButtonDown;
             _negativeInputsCircle[(int)serialNumber] = circle;
@@ -479,6 +483,9 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private void AddPositiveOutput(Ellipse rightEllipse)
         {
+            double outputX = Canvas.GetLeft(_body) + BodyWidth;
+            double outputY = Canvas.GetTop(_body) + ((double)BodyHeight / 2);
+            NegationToGraph(false, false, outputX, outputY);
             _canvas?.Children.Remove(rightEllipse);
             LogicBlock?.Remove(rightEllipse);
             _negativeOutputCircle = null;
@@ -492,10 +499,52 @@ namespace AdaptiveCourseClient.RenderObjects
             Canvas.SetTop(circle, outputY - _negativeCircleDiameter / 2);
             Canvas.SetLeft(circle, outputX - _negativeCircleDiameter * 2 / 3);
 
+            NegationToGraph(false, true, outputX, outputY);
             LogicBlock?.Add(circle);
             circle.PreviewMouseLeftButtonDown +=OutputSnap_PreviewMouseLeftButtonDown;
             _negativeOutputCircle = circle;
             _canvas?.Children.Add(circle);
+        }
+
+        private void NegationToGraph(bool isInputContact, bool isAdd, double contactX, double contactY)
+        {
+            foreach(ConnectionLine connectionLine in _connectionLines)
+            {
+                if (isInputContact)
+                {
+                    if ((connectionLine.BeginElement == this && Math.Abs(connectionLine.ConnectionLinePolyline.Points[0].Y - contactY) <= 0.001 && connectionLine.ConnectionLinePolyline.Points[0].X < contactX) ||
+                    (connectionLine.EndElement == this && Math.Abs(connectionLine.ConnectionLinePolyline.Points.Last().Y - contactY) <= 0.001 && connectionLine.ConnectionLinePolyline.Points.Last().X < contactX))
+                    {
+                        if (isAdd)
+                        {
+                            Graph.AddNegationNode(connectionLine.BeginElement.Name, connectionLine.EndElement.Name, connectionLine.NegativeCount);
+                            connectionLine.NegativeCount++;
+                        }
+                        else
+                        {
+                            Graph.RemoveNegationNode(connectionLine.BeginElement.Name, connectionLine.EndElement.Name, connectionLine.NegativeCount);
+                            connectionLine.NegativeCount--;
+                        }
+                    }
+                }
+                else
+                {
+                    if ((connectionLine.BeginElement == this && Math.Abs(connectionLine.ConnectionLinePolyline.Points[0].Y - contactY) <= 0.001 && connectionLine.ConnectionLinePolyline.Points[0].X > contactX) ||
+                    (connectionLine.EndElement == this && Math.Abs(connectionLine.ConnectionLinePolyline.Points.Last().Y - contactY) <= 0.001 && connectionLine.ConnectionLinePolyline.Points.Last().X > contactX))
+                    {
+                        if (isAdd)
+                        {
+                            Graph.AddNegationNode(connectionLine.BeginElement.Name, connectionLine.EndElement.Name, connectionLine.NegativeCount);
+                            connectionLine.NegativeCount++;
+                        }
+                        else
+                        {
+                            Graph.RemoveNegationNode(connectionLine.BeginElement.Name, connectionLine.EndElement.Name, connectionLine.NegativeCount);
+                            connectionLine.NegativeCount--;
+                        }
+                    }
+                }
+            }
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)
@@ -579,6 +628,30 @@ namespace AdaptiveCourseClient.RenderObjects
                     }
                 }
             }
+        }
+
+        public override bool HasNegationOnContact(Point point)
+        {
+            foreach(Shape negativeInput in _negativeInputsCircle)
+            {
+                if (negativeInput != null)
+                {
+                    double negativeInputX = Canvas.GetLeft(negativeInput);
+                    double negativeInputY = Canvas.GetTop(negativeInput) + _negativeCircleDiameter / 2;
+                    if (Math.Abs(negativeInputY - point.Y) <= 0.001 && point.X < negativeInputX)
+                        return true;
+                }
+            }
+
+            if (_negativeOutputCircle != null)
+            {
+                double negativeOutputX = Canvas.GetLeft(_negativeOutputCircle);
+                double negativeOutputY = Canvas.GetTop(_negativeOutputCircle) + _negativeCircleDiameterOut / 2;
+                if (Math.Abs(negativeOutputY - point.Y) <= 0.001 && point.X > negativeOutputX)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

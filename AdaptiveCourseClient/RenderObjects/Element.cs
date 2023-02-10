@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 
 namespace AdaptiveCourseClient.RenderObjects
 {
@@ -15,6 +17,8 @@ namespace AdaptiveCourseClient.RenderObjects
         }
 
         public abstract void MakeConnection(ConnectionLine connectionLine);
+
+        public abstract bool HasNegationOnContact(System.Windows.Point point);
 
         public abstract void CreateNodes(ConnectionLine connectionLine);
 

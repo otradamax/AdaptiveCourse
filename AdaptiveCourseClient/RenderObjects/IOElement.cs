@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -42,5 +43,7 @@ namespace AdaptiveCourseClient.RenderObjects
         public override void CreateNodes(ConnectionLine connectionLine)
         {
         }
+
+        public override bool HasNegationOnContact(Point point) => false;
     }
 }
