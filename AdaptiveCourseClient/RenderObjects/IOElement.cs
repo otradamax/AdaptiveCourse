@@ -36,6 +36,11 @@ namespace AdaptiveCourseClient.RenderObjects
             }
         }
 
+        public override bool HasConnection(Point point)
+        {
+            return false;
+        }
+
         public override void MakeConnection(ConnectionLine connectionLine)
         {
         }

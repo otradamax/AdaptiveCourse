@@ -1,7 +1,10 @@
 ﻿using AdaptiveCourseClient.RenderObjects;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -92,6 +95,45 @@ namespace AdaptiveCourseClient.Infrastructure
                 }
             }
             return new Point(0, 0);
+        }
+
+        private static string token = String.Empty;
+
+        public static async Task<HttpResponseMessage> Request(HttpMethod method, string address, StringContent stringContent = null)
+        {
+            try
+            {
+                HttpClient httpClient = new HttpClient();
+                using (HttpRequestMessage request = new HttpRequestMessage(method, address))
+                {
+                    request.Headers.Add("Accept", "application/json");
+                    request.Headers.Add("Authorization", "Bearer " + token);
+                    if (stringContent != null)
+                    {
+                        request.Content = stringContent;
+                    }
+                    var response = await httpClient.SendAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        AuthorizationWindow authorizationWindow = new AuthorizationWindow();
+                        authorizationWindow.ShowDialog();
+                        token = authorizationWindow.Token;
+                        if (token != String.Empty)
+                        {
+                            response = await Request(method, address, stringContent);
+                        }
+                    }
+                    else
+                    {
+                        return response;
+                    }
+                    return response;
+                }
+            }
+            catch
+            {
+                throw new NullReferenceException();
+            }
         }
     }
 }

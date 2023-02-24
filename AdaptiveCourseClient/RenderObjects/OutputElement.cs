@@ -1,5 +1,7 @@
 ﻿using AdaptiveCourseClient.Infrastructure;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -64,6 +66,18 @@ namespace AdaptiveCourseClient.RenderObjects
                 elementInitialY / 2 + _contactWidth));
             outputPoints.Add(finalPoint);
             Body.Points = outputPoints;
+        }
+
+        public override bool HasConnection(Point point)
+        {
+            foreach (ConnectionLine connectionLine in _connectionLines)
+            {
+                if (Math.Abs(connectionLine.ConnectionLinePolyline.Points.Last().X - point.X) < 0.001 && Math.Abs(connectionLine.ConnectionLinePolyline.Points.Last().Y - point.Y) < 0.001)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)

@@ -279,7 +279,7 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private void IncreaseInputsNumber()
         {
-            if (_inputsNumber < 10)
+            if (_inputsNumber < ContactNumberMax)
             {
                 _negativeCircleDiameter -= 2;
 
@@ -545,6 +545,18 @@ namespace AdaptiveCourseClient.RenderObjects
                     }
                 }
             }
+        }
+
+        public override bool HasConnection(Point point)
+        {
+            foreach (ConnectionLine connectionLine in _connectionLines)
+            {
+                if (Math.Abs(connectionLine.ConnectionLinePolyline.Points.Last().X - point.X) < 0.001 && Math.Abs(connectionLine.ConnectionLinePolyline.Points.Last().Y - point.Y) < 0.001)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public override void MakeConnection(ConnectionLine connectionLine)

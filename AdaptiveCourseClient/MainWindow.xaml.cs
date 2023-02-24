@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using AdaptiveCourseClient.Infrastructure;
+using AdaptiveCourseClient.Models;
 using AdaptiveCourseClient.RenderObjects;
 using Newtonsoft.Json;
 
@@ -53,15 +54,12 @@ namespace AdaptiveCourseClient
         private bool _isStepEnds = true;
         private bool _isSelected = false;
 
-        private List<string> _renderedBlocks = new List<string>() { "OR", "AND" };
-
-        private static readonly int _logicElementNum = 2;
-        private static readonly int _inputsNum = 4;
+        private List<string> _renderedBlocks = new List<string>() { "AND", "OR" };
 
         private static double _mainLeftRightMargin;
         private static double _mainTopBottomMargin;
 
-        private static string Token = String.Empty;
+        private static SchemeTask _schemeTask = new SchemeTask();
 
         public MainWindow()
         {
@@ -77,8 +75,6 @@ namespace AdaptiveCourseClient
 
             btnCheckScheme.PreviewMouseLeftButtonUp += BtnCheckScheme_PreviewMouseLeftButtonUp;
 
-            CreateBlocks();
-
             //TableWindow tableWindow = new TableWindow();
             //tableWindow.ShowDialog();
         }
@@ -86,39 +82,45 @@ namespace AdaptiveCourseClient
         private async void BtnCheckScheme_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var a = Graph.OrientedGraph;
-            //await GetLogicScheme();
+            await GetLogicScheme();
+        }
+
+        private async Task GetTask()
+        {
+            try
+            {
+                HttpResponseMessage response = await Helper.Request(HttpMethod.Get, "https://localhost:7133/Home/GetTask");
+                string result = await response.Content.ReadAsStringAsync();
+                _schemeTask = JsonConvert.DeserializeObject<SchemeTask>(result);
+                Element.ContactNumberMax = _schemeTask.ContactsNumberMax;
+            }
+            catch
+            {
+
+            }
         }
 
         private async Task GetLogicScheme()
         {
-            HttpClient httpClient = new HttpClient();
-            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7133/Home/LogicScheme"))
+            try
             {
-                var json = JsonConvert.SerializeObject(Graph.OrientedGraph);
-                request.Headers.Add("Accept", "application/json");
-                request.Headers.Add("Authorization", "Bearer " + Token);
-                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await httpClient.SendAsync(request);
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    AuthorizationWindow authorizationWindow = new AuthorizationWindow();
-                    authorizationWindow.ShowDialog();
-                    Token = authorizationWindow.Token;
-                    if (Token != String.Empty)
-                    {
-                        await GetLogicScheme();
-                    }
-                }
-                else
-                {
-                    string result = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show(result, "Результат", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                CheckScheme checkScheme = new CheckScheme(Graph.OrientedGraph, _schemeTask.Id);
+                var json = JsonConvert.SerializeObject(checkScheme);
+                var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await Helper.Request(HttpMethod.Post, "https://localhost:7133/Home/LogicScheme", stringContent);
+                string result = await response.Content.ReadAsStringAsync();
+                MessageBox.Show(result, "Результат", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch
+            {
+
             }
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            await GetTask();
+
             double mainWidth = bodyCanvas.ActualWidth * 4 / 5;
             double toolboxWidth = bodyCanvas.ActualWidth / 5;
             double toolboxHeight = bodyCanvas.ActualHeight;
@@ -133,13 +135,14 @@ namespace AdaptiveCourseClient
             Main.Margin = new Thickness(_mainLeftRightMargin, _mainTopBottomMargin, _mainLeftRightMargin, _mainTopBottomMargin);
             CreateInputs(toolboxWidth);
             CreateOutput();
+            CreateBlocks();
         }
 
         private void CreateInputs(double toolboxWidth)
         {
-            for (int i = 0; i < _inputsNum; i++)
+            for (int i = 0; i < _schemeTask.InputsNumber; i++)
             {
-                InputElement input = new InputElement(bodyCanvas, _inputsNum);
+                InputElement input = new InputElement(bodyCanvas, _schemeTask.InputsNumber);
                 input.AddInput(i, toolboxWidth, bodyCanvas.ActualHeight, _mainLeftRightMargin);
                 input.Body!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
@@ -157,7 +160,8 @@ namespace AdaptiveCourseClient
         {
             for (int i = 0; i < _renderedBlocks.Count; i++)
             {
-                for (int j = 0; j < _logicElementNum; j++)
+                int logicElementNum = _renderedBlocks[i] == "AND" ? _schemeTask.AndNumber : _schemeTask.OrNumber;
+                for (int j = 0; j < logicElementNum; j++)
                 {
                     LogicElement element = new LogicElement(bodyCanvas, BeginningContact_PreviewMouseLeftButtonDown, _renderedBlocks[i], i);
                     _logicElements.Add(element);

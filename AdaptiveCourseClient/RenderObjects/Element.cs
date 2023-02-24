@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 
@@ -9,6 +9,7 @@ namespace AdaptiveCourseClient.RenderObjects
     {
         protected Canvas _canvas;
 
+        public static int ContactNumberMax;
         public string Name;
 
         public Element(Canvas canvas)
@@ -16,9 +17,11 @@ namespace AdaptiveCourseClient.RenderObjects
             _canvas = canvas;
         }
 
+        public abstract bool HasConnection(Point point);
+
         public abstract void MakeConnection(ConnectionLine connectionLine);
 
-        public abstract bool HasNegationOnContact(System.Windows.Point point);
+        public abstract bool HasNegationOnContact(Point point);
 
         public abstract void CreateNodes(ConnectionLine connectionLine);
 

@@ -31,6 +31,11 @@ namespace AdaptiveCourseClient.RenderObjects
         {
             Polyline connectionLine = Figures.AddConnectionLine();
 
+            if (lastElement.HasConnection(lastPoint))
+            {
+                return;
+            }
+
             SetConnectionLinePoints(connectionLine, firstPoint, lastPoint);
 
             connectionLine.MouseMove += ConnectionLine_MouseMove;
