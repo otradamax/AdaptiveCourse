@@ -17,11 +17,11 @@ namespace AdaptiveCourseClient.RenderObjects
         public Element? EndElement { get; set; }
         public int NegativeCount { get; set; } = 0;
 
-        private MainWindow _window;
+        private SchemeWindow _window;
         private Canvas _canvas;
         private List<Node> _nodes = new List<Node>();
 
-        public ConnectionLine(MainWindow window, Canvas canvas)
+        public ConnectionLine(SchemeWindow window, Canvas canvas)
         {
             _window = window;
             _canvas = canvas;

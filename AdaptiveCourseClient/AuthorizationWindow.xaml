@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:AdaptiveCourseClient"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Login" Height="550" Width="450"
+        Title="Login" Height="600" Width="450"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{x:Null}"
         AllowsTransparency="True"
@@ -28,7 +28,7 @@
                 <Button x:Name="btnExit" Content="X" FontSize="20" Foreground="Red" Background="{DynamicResource MaterialDesignPaper}" Style="{StaticResource MaterialDesignFlatSecondaryButton}" 
                         Width="50" HorizontalAlignment="Right" Margin="0 20 20 0" PreviewMouseLeftButtonDown="btnExit_PreviewMouseLeftButtonDown"/>
 
-                <Image Margin="0 20 0 5" Source="images/logo.png" Height="75"/>
+                <Image Margin="0 20 0 5" Source="images/logo-no-background.png" Height="100" Width="300"/>
 
                 <TextBlock Margin="0 25 0 5" HorizontalAlignment="Center" FontSize="28" FontWeight="Bold" Text="Регистрация"/>
 
