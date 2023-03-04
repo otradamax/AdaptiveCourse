@@ -7,13 +7,14 @@
         mc:Ignorable="d"
         KeyDown="Canvas_PreviewKeyDown"
         WindowState="Maximized"
-        Icon="images/logo-no-background.png"
+        Icon="images/logo-icon.png"
         Title="MicroTrainer">
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" x:Name="column0"/>
-                <ColumnDefinition Width="4*" x:Name="column1"/>
+                <ColumnDefinition Width="*" x:Name="column1"/>
+                <ColumnDefinition Width="5*" x:Name="column2"/>
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
@@ -21,13 +22,27 @@
                 <RowDefinition Height="10*" x:Name="row1"/>
             </Grid.RowDefinitions>
 
-            <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.ColumnSpan="2" Grid.Row="1"/>
+            <Canvas x:Name="bodyCanvas" Background="Transparent" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"/>
 
-            <Button x:Name="btnCheckScheme" Grid.ColumnSpan="2" Background="CornflowerBlue" Content="Проверить" Grid.Row="0" FontSize="20" Cursor="Hand" Foreground="AntiqueWhite"/>
-
-            <Rectangle x:Name="Toolbox" Grid.Column="0" Fill="Wheat" Panel.ZIndex="-1" Grid.Row="1"/>
-            <Rectangle x:Name="Main" Grid.Column="1" Fill="#8BD7F9"
+            <Grid x:Name="TaskBoxGrid" Panel.ZIndex="1" Grid.Row="1" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="TaskBox" Fill="White" Grid.RowSpan="2"/>
+                <TextBlock x:Name="textTaskBox" FontSize="16" Grid.Row="0"
+                           TextWrapping="WrapWithOverflow" TextAlignment="Justify"/>
+                <DataGrid Grid.Row="1" Style="{DynamicResource DataGridStyle1}" CellStyle="{DynamicResource DataGridCellStyle1}" 
+                      ColumnHeaderStyle="{DynamicResource DataGridColumnHeaderStyle1}" RowStyle="{DynamicResource DataGridRowStyle1}"
+                          x:Name="tableTaskBox"/>
+            </Grid>
+            
+            <Rectangle x:Name="Toolbox" Grid.Column="1" Fill="Wheat" Panel.ZIndex="-1" Grid.Row="1"/>
+            <Rectangle x:Name="Main" Grid.Column="2" Fill="#8BD7F9"
                        RadiusX="20" RadiusY="20" Panel.ZIndex="-1" Grid.Row="1"/>
+
+            <Button x:Name="btnCheckScheme" Grid.ColumnSpan="3" Background="CornflowerBlue" 
+                    Content="Проверить" Grid.Row="0" FontSize="20" Cursor="Hand" Foreground="AntiqueWhite"/>
         </Grid>
     </ScrollViewer>
 </Window>

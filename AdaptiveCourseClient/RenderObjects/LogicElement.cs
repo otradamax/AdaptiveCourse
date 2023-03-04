@@ -35,17 +35,19 @@ namespace AdaptiveCourseClient.RenderObjects
 
         private int _negativeCircleDiameter = 24;
         private int _bodyHeightDelta = 10;
-        private readonly int _bodyInitialX = 100;
+        private int _bodyInitialX;
         private int _bodyInitialY = 50;
         private int _inputsNumber;
         private string _logicBlockName;
 
-        public LogicElement(Canvas canvas, MouseButtonEventHandler BeginningContact_PreviewMouseLeftButtonDown, string logicBlockName, int verticalSerialNumber) : base(canvas)
+        public LogicElement(Canvas canvas, MouseButtonEventHandler BeginningContact_PreviewMouseLeftButtonDown, string logicBlockName, 
+            int verticalSerialNumber, double toolboxWidth) : base(canvas)
         {
             _canvas = canvas;
             _outputEventFromMain = BeginningContact_PreviewMouseLeftButtonDown;
             _logicBlockName = logicBlockName;
             _bodyInitialY += verticalSerialNumber * 150;
+            _bodyInitialX = Convert.ToInt32(toolboxWidth / 2 - BodyWidth / 2);
         }
 
         public void AddBlock(int serialNumber)

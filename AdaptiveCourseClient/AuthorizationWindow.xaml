@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:AdaptiveCourseClient"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
+        Icon="images/logo-icon.png"
         Title="Login" Height="600" Width="450"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{x:Null}"

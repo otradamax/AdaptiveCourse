@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="images\logo-color.png" />
+    <None Remove="images\logo-icon.png" />
     <None Remove="images\logo-no-background.png" />
     <None Remove="images\logo.png" />
   </ItemGroup>
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <Resource Include="images\logo-color.png" />
+    <Resource Include="images\logo-icon.png" />
     <Resource Include="images\logo-no-background.png" />
     <Resource Include="images\logo.png" />
   </ItemGroup>

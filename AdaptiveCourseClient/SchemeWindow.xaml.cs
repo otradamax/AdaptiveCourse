@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -16,6 +17,7 @@ using AdaptiveCourseClient.Infrastructure;
 using AdaptiveCourseClient.Models;
 using AdaptiveCourseClient.RenderObjects;
 using Newtonsoft.Json;
+using static AdaptiveCourseClient.TableWindow;
 
 namespace AdaptiveCourseClient
 {
@@ -58,6 +60,7 @@ namespace AdaptiveCourseClient
 
         private static double _mainLeftRightMargin;
         private static double _mainTopBottomMargin;
+        private static double _toolboxWidth;
 
         private static SchemeTask _schemeTask = new SchemeTask();
 
@@ -75,9 +78,6 @@ namespace AdaptiveCourseClient
             _inputs = new List<InputElement>();
             connectionLines = new List<ConnectionLine>();
             btnCheckScheme.PreviewMouseLeftButtonUp += BtnCheckScheme_PreviewMouseLeftButtonUp;
-
-            //TableWindow tableWindow = new TableWindow();
-            //tableWindow.ShowDialog();
         }
 
         private async void BtnCheckScheme_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -105,29 +105,78 @@ namespace AdaptiveCourseClient
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            double mainWidth = bodyCanvas.ActualWidth * 4 / 5;
-            double toolboxWidth = bodyCanvas.ActualWidth / 5;
+            double mainWidth = bodyCanvas.ActualWidth * 5 / 6;
+            _toolboxWidth = bodyCanvas.ActualWidth / 6;
             double toolboxHeight = bodyCanvas.ActualHeight;
 
-            column0.Width = new GridLength(toolboxWidth, GridUnitType.Pixel);
-            column1.Width = new GridLength(mainWidth, GridUnitType.Pixel);
+            column0.Width = new GridLength(TaskBoxGrid.ActualWidth, GridUnitType.Pixel);
+            column1.Width = new GridLength(_toolboxWidth, GridUnitType.Pixel);
+            column2.Width = new GridLength(mainWidth, GridUnitType.Pixel);
             row0.Height = new GridLength(btnCheckScheme.ActualHeight, GridUnitType.Pixel);
             row1.Height = new GridLength(toolboxHeight, GridUnitType.Pixel);
 
             _mainLeftRightMargin = mainWidth / 20;
             _mainTopBottomMargin = toolboxHeight / 10;
             Main.Margin = new Thickness(_mainLeftRightMargin, _mainTopBottomMargin, _mainLeftRightMargin, _mainTopBottomMargin);
-            CreateInputs(toolboxWidth);
+            TaskInitialize();
+            CreateInputs();
             CreateOutput();
             CreateBlocks();
         }
 
-        private void CreateInputs(double toolboxWidth)
+        private void TaskInitialize()
+        {
+            textTaskBox.Margin = new Thickness(TaskBoxGrid.ActualWidth / 10);
+            textTaskBox.Text = "На основе таблицы истинности составьте корректную электрическую логическую схему";
+
+            List<Data> _datas = new List<Data>();
+            List<string> _headerNames = new List<string>() { "X0", "X1", "X2", "X3", "Y" };
+            int[,] _X = new int[,]
+            {
+                { 0, 0, 0, 0 },
+                { 0, 0, 0, 1 },
+                { 0, 0, 1, 0 },
+                { 0, 0, 1, 1 },
+                { 0, 1, 0, 0 },
+                { 0, 1, 0, 1 },
+                { 0, 1, 1, 0 },
+                { 0, 1, 1, 1 },
+                { 1, 0, 0, 0 },
+                { 1, 0, 0, 1 },
+                { 1, 0, 1, 0 },
+                { 1, 0, 1, 1 },
+                { 1, 1, 0, 0 },
+                { 1, 1, 0, 1 },
+                { 1, 1, 1, 0 },
+                { 1, 1, 1, 1 }
+            };
+            tableTaskBox.Width = TaskBoxGrid.ActualWidth - TaskBoxGrid.ActualWidth / 10;
+            foreach (string headerName in _headerNames)
+            {
+                var column = new DataGridTextColumn();
+                column.Header = headerName;
+                column.Binding = new Binding(headerName);
+                column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
+                if (headerName != "Y")
+                {
+                    column.IsReadOnly = true;
+                }
+                tableTaskBox.Columns.Add(column);
+            }
+
+            for (int i = 0; i < _X.GetLength(0); i++)
+            {
+                _datas.Add(new Data { X0 = _X[i, 0], X1 = _X[i, 1], X2 = _X[i, 2], X3 = _X[i, 3], Y = 0 });
+            }
+            tableTaskBox.ItemsSource = _datas;
+        }
+
+        private void CreateInputs()
         {
             for (int i = 0; i < _schemeTask.InputsNumber; i++)
             {
                 InputElement input = new InputElement(bodyCanvas, _schemeTask.InputsNumber);
-                input.AddInput(i, toolboxWidth, bodyCanvas.ActualHeight, _mainLeftRightMargin);
+                input.AddInput(i, _toolboxWidth, bodyCanvas.ActualHeight, _mainLeftRightMargin);
                 input.Body!.PreviewMouseLeftButtonDown += BeginningContact_PreviewMouseLeftButtonDown;
                 _inputs.Add(input);
             }
@@ -147,7 +196,7 @@ namespace AdaptiveCourseClient
                 int logicElementNum = _renderedBlocks[i] == "AND" ? _schemeTask.AndNumber : _schemeTask.OrNumber;
                 for (int j = 0; j < logicElementNum; j++)
                 {
-                    LogicElement element = new LogicElement(bodyCanvas, BeginningContact_PreviewMouseLeftButtonDown, _renderedBlocks[i], i);
+                    LogicElement element = new LogicElement(bodyCanvas, BeginningContact_PreviewMouseLeftButtonDown, _renderedBlocks[i], i, _toolboxWidth);
                     _logicElements.Add(element);
                     element.AddBlock(j);
                     element.MoveLogicBlockEvents(LogicElement_PreviewMouseLeftButtonDown, LogicElement_PreviewMouseMove,
