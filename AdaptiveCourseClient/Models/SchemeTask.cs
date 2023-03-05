@@ -15,6 +15,9 @@ namespace AdaptiveCourseClient.Models
         [JsonProperty("InputsNumber")]
         public int InputsNumber { get; set; }
 
+        [JsonProperty("ExpectedOutput")]
+        public string ExpectedOutput { get; set; }
+
         [JsonProperty("ContactsNumberMax")]
         public int ContactsNumberMax { get; set; }
 

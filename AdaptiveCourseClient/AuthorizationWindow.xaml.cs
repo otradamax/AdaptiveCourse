@@ -41,5 +41,13 @@ namespace AdaptiveCourseClient
         {
             this.Close();
         }
+
+        private void keyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                btnLogin_PreviewMouseLeftButtonDown(sender, null);
+            }
+        }
     }
 }

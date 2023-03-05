@@ -157,16 +157,13 @@ namespace AdaptiveCourseClient
                 column.Header = headerName;
                 column.Binding = new Binding(headerName);
                 column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
-                if (headerName != "Y")
-                {
-                    column.IsReadOnly = true;
-                }
+                column.IsReadOnly = true;
                 tableTaskBox.Columns.Add(column);
             }
 
             for (int i = 0; i < _X.GetLength(0); i++)
             {
-                _datas.Add(new Data { X0 = _X[i, 0], X1 = _X[i, 1], X2 = _X[i, 2], X3 = _X[i, 3], Y = 0 });
+                _datas.Add(new Data { X0 = _X[i, 0], X1 = _X[i, 1], X2 = _X[i, 2], X3 = _X[i, 3], Y = _schemeTask.ExpectedOutput[i] == 49 ? 1 : 0 });
             }
             tableTaskBox.ItemsSource = _datas;
         }

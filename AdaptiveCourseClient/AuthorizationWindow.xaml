@@ -25,7 +25,7 @@
 
     <materialDesign:Card UniformCornerRadius="15" Background="{DynamicResource MaterialDesignPaper}" Margin="25" materialDesign:ShadowAssist.ShadowDepth="Depth4">
         <materialDesign:DialogHost CloseOnClickAway="True" x:Name="DialogHost">
-            <StackPanel>
+            <StackPanel KeyDown="keyDown">
                 <Button x:Name="btnExit" Content="X" FontSize="20" Foreground="Red" Background="{DynamicResource MaterialDesignPaper}" Style="{StaticResource MaterialDesignFlatSecondaryButton}" 
                         Width="50" HorizontalAlignment="Right" Margin="0 20 20 0" PreviewMouseLeftButtonDown="btnExit_PreviewMouseLeftButtonDown"/>
 

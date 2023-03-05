@@ -59,8 +59,8 @@ namespace AdaptiveCourseClient
         private void TableWindow_Loaded(object sender, RoutedEventArgs e)
         {
             truthTable.Width = btnCheckScheme.ActualWidth;
-            double height = (tableWindow.ActualHeight - btnCheckScheme.ActualHeight) / 17;
-            foreach(string headerName in _headerNames)
+            double height = (tableWindow.ActualHeight - btnCheckScheme.ActualHeight) / 18;
+            foreach (string headerName in _headerNames)
             {
                 var column = new DataGridTextColumn();
                 column.Header = headerName;
@@ -79,6 +79,7 @@ namespace AdaptiveCourseClient
             }
             truthTable.ItemsSource = _datas;
 
+            truthTable.ColumnHeaderHeight = height;
             truthTable.RowHeight = height;
         }
 

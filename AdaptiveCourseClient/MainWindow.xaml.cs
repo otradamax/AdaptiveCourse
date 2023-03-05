@@ -39,6 +39,9 @@ namespace AdaptiveCourseClient
 
             this.Visibility = Visibility.Collapsed;
 
+            //TableWindow tableWindow = new TableWindow();
+            //tableWindow.ShowDialog();
+
             SchemeWindow schemeWindow = new SchemeWindow(_task);
             schemeWindow.ShowDialog();
         }
