@@ -61,6 +61,7 @@ namespace AdaptiveCourseClient
         private static double _mainLeftRightMargin;
         private static double _mainTopBottomMargin;
         private static double _toolboxWidth;
+        private static int _inputCount = 4;
 
         private static SchemeTask _schemeTask = new SchemeTask();
 
@@ -130,26 +131,14 @@ namespace AdaptiveCourseClient
             textTaskBox.Text = "На основе таблицы истинности составьте корректную электрическую логическую схему";
 
             List<Data> _datas = new List<Data>();
-            List<string> _headerNames = new List<string>() { "X0", "X1", "X2", "X3", "Y" };
-            int[,] _X = new int[,]
+            List<string> _headerNames = new List<string>();
+            for (int i = 0; i < _schemeTask.InputsNumber; i++)
             {
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 1 },
-                { 0, 0, 1, 0 },
-                { 0, 0, 1, 1 },
-                { 0, 1, 0, 0 },
-                { 0, 1, 0, 1 },
-                { 0, 1, 1, 0 },
-                { 0, 1, 1, 1 },
-                { 1, 0, 0, 0 },
-                { 1, 0, 0, 1 },
-                { 1, 0, 1, 0 },
-                { 1, 0, 1, 1 },
-                { 1, 1, 0, 0 },
-                { 1, 1, 0, 1 },
-                { 1, 1, 1, 0 },
-                { 1, 1, 1, 1 }
-            };
+                _headerNames.Add("X" + i.ToString());
+            }
+            _headerNames.Add("Y");
+            List<List<int>> _X = new List<List<int>>();
+            Helper.TruthTableInitialization(ref _X, _schemeTask.InputsNumber);
             tableTaskBox.Width = TaskBoxGrid.ActualWidth - TaskBoxGrid.ActualWidth / 10;
             foreach (string headerName in _headerNames)
             {
@@ -161,9 +150,20 @@ namespace AdaptiveCourseClient
                 tableTaskBox.Columns.Add(column);
             }
 
-            for (int i = 0; i < _X.GetLength(0); i++)
+            for (int i = 0; i < _X.Count; i++)
             {
-                _datas.Add(new Data { X0 = _X[i, 0], X1 = _X[i, 1], X2 = _X[i, 2], X3 = _X[i, 3], Y = _schemeTask.ExpectedOutput[i] == 49 ? 1 : 0 });
+                if (_schemeTask.InputsNumber == 4)
+                {
+                    _datas.Add(new Data4(_X[i][0], _X[i][1], _X[i][2], _X[i][3], _schemeTask.ExpectedOutput[i] == 49 ? 1 : 0));
+                }
+                else if (_schemeTask.InputsNumber == 3)
+                {
+                    _datas.Add(new Data3(_X[i][0], _X[i][1], _X[i][2], _schemeTask.ExpectedOutput[i] == 49 ? 1 : 0));
+                }
+                else if (_schemeTask.InputsNumber == 2)
+                {
+                    _datas.Add(new Data2(_X[i][0], _X[i][1], _schemeTask.ExpectedOutput[i] == 49 ? 1 : 0));
+                }
             }
             tableTaskBox.ItemsSource = _datas;
         }

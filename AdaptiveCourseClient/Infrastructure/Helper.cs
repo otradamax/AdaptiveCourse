@@ -1,6 +1,7 @@
 ﻿using AdaptiveCourseClient.RenderObjects;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -95,6 +96,25 @@ namespace AdaptiveCourseClient.Infrastructure
                 }
             }
             return new Point(0, 0);
+        }
+
+        public static void TruthTableInitialization(ref List<List<int>> _X, int _InputCount)
+        {
+            _X = new List<List<int>>();
+            for (int i = 0; i < Math.Pow(_InputCount, 2); i++)
+            {
+                List<int> trueTableRow = new List<int>();
+                string iDoubled = Convert.ToString(i, 2);
+                for (int j = 0; j < _InputCount - iDoubled.Length; j++)
+                {
+                    trueTableRow.Add(0);
+                }
+                for (int j = 0; j < iDoubled.Length; j++)
+                {
+                    trueTableRow.Add(Convert.ToByte(iDoubled[j]) == 48 ? 0 : 1);
+                }
+                _X.Add(trueTableRow);
+            }
         }
 
         private static string token = String.Empty;
