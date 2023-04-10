@@ -107,7 +107,7 @@ namespace AdaptiveCourseClient.RenderObjects
             selectedLine.StrokeThickness = 5;
 
             //Connection line moving
-            if (e.LeftButton == MouseButtonState.Pressed && ConnectionLinePolyline != null)
+            if (e.LeftButton == MouseButtonState.Pressed && ConnectionLinePolyline.Points.Count == 4 && ConnectionLinePolyline != null)
             {
                 Point connectionLineCoord = e.GetPosition(_canvas);
                 if ((connectionLineCoord.Y > ConnectionLinePolyline.Points[0].Y 
@@ -116,9 +116,13 @@ namespace AdaptiveCourseClient.RenderObjects
                     && connectionLineCoord.Y > ConnectionLinePolyline.Points.Last().Y))
                 {
                     Point cursorPosition = e.GetPosition(sender as Canvas);
+                    cursorPosition.X -= _window.TaskBoxGrid.ActualWidth;
                     ConnectionLinePolyline.Points[1] = new Point(cursorPosition.X, ConnectionLinePolyline.Points[1].Y);
                     ConnectionLinePolyline.Points[2] = new Point(cursorPosition.X, ConnectionLinePolyline.Points[2].Y);
                 }
+                RemoveNodes();
+                BeginElement?.CreateNodes(this);
+                EndElement?.CreateNodes(this);
             }
         }
 
@@ -198,31 +202,35 @@ namespace AdaptiveCourseClient.RenderObjects
         private PointCollection MoveConnectionLinePoints(PointCollection connectionLine, double newX, double newY, double connectionLineX, double connectionLineY)
         {
             PointCollection points = new PointCollection();
-            if ((connectionLine.Last().X < connectionLine[0].X - 2 * LogicElement.ContactWidth && connectionLine[1].X < connectionLine[0].X) ||
-                (connectionLine.Last().X >= connectionLine[0].X + 2 * LogicElement.ContactWidth && connectionLine[1].X > connectionLine[0].X))
+            Point firstPoint = connectionLine[0];
+            Point lastPoint = connectionLine.Last();
+            double distance = Math.Abs(connectionLine[1].X - (lastPoint.X < firstPoint.X ? lastPoint.X : firstPoint.X)) / Math.Abs(lastPoint.X - firstPoint.X);
+            double distanceMoveX = (lastPoint.X - firstPoint.X) - (lastPoint.X - newX);
+            if ((lastPoint.X < (firstPoint.X - 2 * LogicElement.ContactWidth) && connectionLine[1].X < firstPoint.X) ||
+                (lastPoint.X >= (firstPoint.X + 2 * LogicElement.ContactWidth) && connectionLine[1].X > firstPoint.X))
             {
                 points.Add(new Point(newX, newY));
-                points.Add(new Point(connectionLineX, newY));
-                points.Add(new Point(connectionLineX, connectionLine.Last().Y));
-                points.Add(new Point(connectionLine.Last().X, connectionLine.Last().Y));
+                points.Add(new Point(Math.Abs(lastPoint.X - newX) * distance + (lastPoint.X < newX ? lastPoint.X : newX), newY));
+                points.Add(new Point(Math.Abs(lastPoint.X - newX) * distance + (lastPoint.X < newX ? lastPoint.X : newX), lastPoint.Y));
+                points.Add(new Point(lastPoint.X, lastPoint.Y));
             }
-            else if ((connectionLine.Last().X >= connectionLine[0].X - 2 * LogicElement.ContactWidth && connectionLine[1].X < connectionLine[0].X))
+            else if ((lastPoint.X >= (firstPoint.X - 2 * LogicElement.ContactWidth) && connectionLine[1].X < firstPoint.X))
             {
                 points.Add(new Point(newX, newY));
                 points.Add(new Point(newX - LogicElement.ContactWidth, newY));
                 points.Add(new Point(newX - LogicElement.ContactWidth, connectionLineY));
-                points.Add(new Point(connectionLine.Last().X + LogicElement.ContactWidth, connectionLineY));
-                points.Add(new Point(connectionLine.Last().X + LogicElement.ContactWidth, connectionLine.Last().Y));
-                points.Add(new Point(connectionLine.Last().X, connectionLine.Last().Y));
+                points.Add(new Point(lastPoint.X + LogicElement.ContactWidth, connectionLineY));
+                points.Add(new Point(lastPoint.X + LogicElement.ContactWidth, lastPoint.Y));
+                points.Add(new Point(lastPoint.X, lastPoint.Y));
             }
-            else if((connectionLine.Last().X < connectionLine[0].X + 2 * LogicElement.ContactWidth && connectionLine[1].X > connectionLine[0].X))
+            else if((lastPoint.X < (firstPoint.X + 2 * LogicElement.ContactWidth) && connectionLine[1].X > firstPoint.X))
             {
                 points.Add(new Point(newX, newY));
                 points.Add(new Point(newX + 2 * LogicElement.ContactWidth, newY));
                 points.Add(new Point(newX + 2 * LogicElement.ContactWidth, connectionLineY));
-                points.Add(new Point(connectionLine.Last().X - LogicElement.ContactWidth, connectionLineY));
-                points.Add(new Point(connectionLine.Last().X - LogicElement.ContactWidth, connectionLine.Last().Y));
-                points.Add(new Point(connectionLine.Last().X, connectionLine.Last().Y));
+                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, connectionLineY));
+                points.Add(new Point(lastPoint.X - LogicElement.ContactWidth, lastPoint.Y));
+                points.Add(new Point(lastPoint.X, lastPoint.Y));
             }
             return points;
         }

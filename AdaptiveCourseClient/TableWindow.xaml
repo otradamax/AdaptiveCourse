@@ -11,6 +11,11 @@
 
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" x:Name="column0"/>
+                <ColumnDefinition Width="*" x:Name="column1"/>
+            </Grid.ColumnDefinitions>
+            
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" x:Name="row0"/>
                 <RowDefinition Height="10*" x:Name="row1"/>
@@ -19,11 +24,22 @@
             <Button x:Name="btnCheckScheme" Grid.ColumnSpan="2" Background="CornflowerBlue" Content="Проверить" 
                     Grid.Row="0" FontSize="20" Cursor="Hand" Foreground="AntiqueWhite" Click="btnCheckScheme_Click"/>
 
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Rectangle x:Name="taskDescription" Fill="White" Grid.RowSpan="2"/>
+
+                <TextBlock x:Name="txtTask" FontSize="16" Grid.Row="0"
+                           TextWrapping="WrapWithOverflow" TextAlignment="Justify"/>
+                <Image x:Name="imgScheme" Grid.Row="1"/>
+            </Grid>
+
             <DataGrid Style="{DynamicResource DataGridStyle1}" CellStyle="{DynamicResource DataGridCellStyle1}" 
                       ColumnHeaderStyle="{DynamicResource DataGridColumnHeaderStyle1}" RowStyle="{DynamicResource DataGridRowStyle1}" 
-                      Grid.Row="1" x:Name="truthTable">
-                
-            </DataGrid>
+                      Grid.Row="1" Grid.Column="1" x:Name="truthTable"/>
         </Grid>
     </ScrollViewer>
     

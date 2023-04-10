@@ -84,10 +84,10 @@ namespace AdaptiveCourseClient
         private async void BtnCheckScheme_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var a = Graph.OrientedGraph;
-            await GetLogicScheme();
+            await CheckLogicScheme();
         }
 
-        private async Task GetLogicScheme()
+        private async Task CheckLogicScheme()
         {
             try
             {

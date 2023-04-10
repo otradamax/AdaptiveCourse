@@ -24,7 +24,8 @@ namespace AdaptiveCourseClient
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static SchemeTask _task = new SchemeTask();
+        private static SchemeTask _schemeTask = new SchemeTask();
+        private static TableTask _tableTask = new TableTask();
 
         public MainWindow()
         {
@@ -35,25 +36,49 @@ namespace AdaptiveCourseClient
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await GetTask();
+            bool isScheme = true;
+            if (isScheme)
+            {
+                await GetSchemeTask();
 
-            this.Visibility = Visibility.Collapsed;
+                this.Visibility = Visibility.Collapsed;
 
-            //TableWindow tableWindow = new TableWindow();
-            //tableWindow.ShowDialog();
+                SchemeWindow schemeWindow = new SchemeWindow(_schemeTask);
+                schemeWindow.ShowDialog();
+            }
+            else
+            {
+                await GetTableTask();
 
-            SchemeWindow schemeWindow = new SchemeWindow(_task);
-            schemeWindow.ShowDialog();
+                this.Visibility = Visibility.Collapsed;
+
+                TableWindow tableWindow = new TableWindow(_tableTask);
+                tableWindow.ShowDialog();
+            }
         }
 
-        private async Task GetTask()
+        private async Task GetSchemeTask()
         {
             try
             {
-                HttpResponseMessage response = await Helper.Request(HttpMethod.Get, "https://localhost:7133/Home/GetTask");
+                HttpResponseMessage response = await Helper.Request(HttpMethod.Get, "https://localhost:7133/Home/GetSchemeTask");
                 string result = await response.Content.ReadAsStringAsync();
-                _task = JsonConvert.DeserializeObject<SchemeTask>(result);
-                Element.ContactNumberMax = _task.ContactsNumberMax;
+                _schemeTask = JsonConvert.DeserializeObject<SchemeTask>(result);
+                Element.ContactNumberMax = _schemeTask.ContactsNumberMax;
+            }
+            catch
+            {
+
+            }
+        }
+
+        private async Task GetTableTask()
+        {
+            try
+            {
+                HttpResponseMessage response = await Helper.Request(HttpMethod.Get, "https://localhost:7133/Home/GetTableTask");
+                string result = await response.Content.ReadAsStringAsync();
+                _tableTask = JsonConvert.DeserializeObject<TableTask>(result);
             }
             catch
             {
